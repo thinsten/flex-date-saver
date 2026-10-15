@@ -2,15 +2,15 @@
   "generated_for": "2026-10-15",
   "goal": "save",
   "goal_cn": "省钱优先",
-  "replay": false,
+  "replay": true,
   "recorded_at": {
     "first": "2026-10-15T15:17",
     "last": "2026-10-15T15:18"
   },
   "errors": [
     {
-      "code": "risk_control",
-      "message": "飞猪接口触发风控（短时间调用过多），已停止后续查询，请稍后重试",
+      "code": "replay_miss",
+      "message": "回放模式下缓存未命中，跳过该查询",
       "args": [
         "search-flight",
         "--origin",
@@ -25,17 +25,17 @@
     }
   ],
   "warnings": [
-    "三亚→上海 在 2027-02-11 没有查到航班（该日无航班或接口无数据）",
-    "上海→三亚 在 2027-02-06 没有查到航班（该日无航班或接口无数据）"
+    "三亚→上海 在 2027-02-07, 2027-02-11 没有查到航班（该日无航班或接口无数据）",
+    "上海→三亚 在 2027-02-04, 2027-02-05, 2027-02-06, 2027-02-08, 2027-02-10 没有查到航班（该日无航班或接口无数据）"
   ],
   "meta": {
-    "live_calls": 1,
-    "cache_hits": 11,
-    "skipped": 0,
+    "live_calls": 0,
+    "cache_hits": 12,
+    "skipped": 5,
     "max_calls": 20,
-    "stopped": "risk_control",
+    "stopped": null,
     "trial_mode": false,
-    "replay": false,
+    "replay": true,
     "total_candidates": 9,
     "estimated_queries": 25,
     "hint_queries": 0,
@@ -48,12 +48,12 @@
       "ret|三亚|2027-02-09": 1920.0,
       "ret|三亚|2027-02-14": 2070.0
     },
-    "selected": 5,
-    "truncated": true,
+    "selected": 9,
+    "truncated": false,
     "pattern_skipped": 0,
     "evaluated_candidates": 1,
     "over_budget_candidates": 0,
-    "elapsed_s": 1.4
+    "elapsed_s": 0.0
   },
   "plans": [
     {
@@ -221,21 +221,35 @@
     },
     {
       "candidate_id": "三亚|2027-02-04|4n|free_day|free_day",
-      "status": "no_data",
-      "reason": "当天没有查到航班数据"
+      "status": "budget",
+      "reason": "单次查询额度用完，未查完"
+    },
+    {
+      "candidate_id": "三亚|2027-02-08|4n|free_day|free_day",
+      "status": "budget",
+      "reason": "单次查询额度用完，未查完"
+    },
+    {
+      "candidate_id": "三亚|2027-02-10|4n|free_day|free_day",
+      "status": "budget",
+      "reason": "单次查询额度用完，未查完"
+    },
+    {
+      "candidate_id": "三亚|2027-02-05|4n|free_day|free_day",
+      "status": "budget",
+      "reason": "单次查询额度用完，未查完"
+    },
+    {
+      "candidate_id": "三亚|2027-02-03|4n|day_off|free_day",
+      "status": "budget",
+      "reason": "单次查询额度用完，未查完"
     }
   ],
   "unavailable_hints": [
-    "有 1 个「下班后出发」的日期赶不上 22 点前起飞的航班，接受去程红眼或特种兵可解锁",
-    "为控制查询量（单次 ≤20 次），另有 4 个日期组合未查询；缩小时间窗口或固定晚数可覆盖更全"
+    "有 1 个「下班后出发」的日期赶不上 22 点前起飞的航班，接受去程红眼或特种兵可解锁"
   ],
   "min_feasible_total": 9100.0,
-  "not_queried": [
-    "三亚|2027-02-08|4n|free_day|free_day",
-    "三亚|2027-02-10|4n|free_day|free_day",
-    "三亚|2027-02-05|4n|free_day|free_day",
-    "三亚|2027-02-03|4n|day_off|free_day"
-  ],
+  "not_queried": [],
   "notes": [
     "价格以飞猪预订页为准；酒店为每晚参考起价；火车余票需自行确认",
     "2027 年放假安排为预估，以国务院公布为准"
