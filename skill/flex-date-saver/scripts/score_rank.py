@@ -130,13 +130,16 @@ def rank(req, quotes_doc, goal=None, top_n=3):
     goal = goal or req["goal"]["priority"]
     budget = req["goal"].get("budget_total")
     quotes = quotes_doc["quotes"]
-    best_per_cand, over_budget = [], 0
+    best_per_cand, over_budget, min_total = [], 0, None
     key = sort_key(goal)
     for q in quotes:
         if q["status"] != "ok":
             continue
         combos = evaluate(q, req, cfg)
-        if budget and goal in ("play", "balance"):
+        if combos:
+            m = min(c["price"]["total"] for c in combos)
+            min_total = m if min_total is None else min(min_total, m)
+        if budget:
             within = [c for c in combos if c["price"]["total"] <= budget]
             over_budget += len(combos) > 0 and not within
             combos = within
@@ -201,7 +204,10 @@ def rank(req, quotes_doc, goal=None, top_n=3):
         "plans": plans,
         "per_destination_best": per_dest,
         "unavailable": unavailable,
-        "unavailable_hints": unavailable_hints(quotes, req, quotes_doc),
+        "unavailable_hints": ([f"预算 {budget:.0f} 元低于最低可行总价约 {min_total:.0f} 元：可提高预算、降低酒店星级或价格带、放开中转/红眼"]
+                              if budget and min_total and not plans and min_total > budget else [])
+                             + unavailable_hints(quotes, req, quotes_doc),
+        "min_feasible_total": min_total,
         "not_queried": quotes_doc.get("not_queried", []),
         "notes": notes,
         "system_messages": sys_msgs,

@@ -179,7 +179,9 @@ class Quoter:
         return (data or {}).get("itemList") or []
 
     def _flights(self, origin, dest, day, hour_start=None, arr_hour_end=None):
-        data = self.c.call(flight_args(origin, dest, day, self.req, hour_start, arr_hour_end))
+        # 实测（docs/api-notes.md §2.1）：服务端按「出发-到达-日期」缓存航班结果约 5 分钟，且忽略起飞/到达时段参数——
+        # 先带时段查过，同线同日的不带时段查询也只会拿到那份过滤后的结果（甚至为空）。所以航班一律不带时段参数，时刻全部本地过滤。
+        data = self.c.call(flight_args(origin, dest, day, self.req))
         if data is None and not self.c.stopped:
             # 实测 data:null 是「该日该线路无结果」（如硕放→三亚并非每天有航班，三亚→上海个别日期也会空），不能推断整条线路无航班
             self.null_days.setdefault((origin, dest), set()).add(str(day))

@@ -1,0 +1,21 @@
+{
+  "version": "1",
+  "home_city": "上海",
+  "destinations": ["三亚", "厦门"],
+  "window": {"start": "2026-11-16", "end": "2026-12-13"},
+  "nights": {"min": 2, "max": 3},
+  "travelers": {"adults": 2, "children": 0},
+  "rooms": 1,
+  "work": {"off_time": "18:30", "start_time": "09:30"},
+  "stations": [
+    {"name": "上海虹桥机场", "type": "air", "commute_min": 50},
+    {"name": "上海浦东机场", "type": "air", "commute_min": 80},
+    {"name": "上海虹桥站", "type": "train", "commute_min": 45}
+  ],
+  "leave": {"allowed_dates": ["2026-11-20", "2026-11-23", "2026-12-04", "2026-12-07"], "max_days": 1},
+  "return_home_by": "23:30",
+  "transport": {"redeye_out": false, "redeye_back": false, "transfer_ok": false, "max_layover_min": 180,
+                "nearby_origin_ok": false, "nearby_cities": [], "max_train_min": 60},
+  "hotel": {"mode": "filter", "stars": [4, 5], "types": ["酒店"], "chain": "any", "area": "", "price_min": null, "price_max": 900},
+  "goal": {"priority": "play", "special_forces": false, "budget_total": 6000}
+}

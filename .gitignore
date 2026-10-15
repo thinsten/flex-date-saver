@@ -10,3 +10,6 @@ __pycache__/
 .DS_Store
 node_modules/
 out/
+dist/
+tools/.deploy_state.json
+tools/vendor/

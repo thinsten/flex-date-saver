@@ -61,7 +61,7 @@ class FlyaiClient:
             return None
 
         rec = None
-        for attempt in range(4):
+        for attempt in range(5):
             wait = self.min_interval_s - (time.time() - self._last)
             if wait > 0:
                 time.sleep(wait)

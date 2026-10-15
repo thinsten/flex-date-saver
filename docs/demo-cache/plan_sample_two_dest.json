@@ -1,0 +1,105 @@
+{
+  "generated_for": "2026-10-15",
+  "goal": "play",
+  "goal_cn": "多玩优先",
+  "replay": false,
+  "recorded_at": null,
+  "errors": [
+    {
+      "code": "risk_control",
+      "message": "飞猪接口触发风控（短时间调用过多），已停止后续查询，请稍后重试",
+      "args": [
+        "search-flight",
+        "--origin",
+        "上海",
+        "--destination",
+        "三亚",
+        "--dep-date-start",
+        "2026-11-19",
+        "--dep-date-end",
+        "2026-12-11",
+        "--sort-type",
+        "3",
+        "--journey-type",
+        "1"
+      ]
+    }
+  ],
+  "warnings": [],
+  "meta": {
+    "live_calls": 1,
+    "cache_hits": 0,
+    "skipped": 3,
+    "max_calls": 30,
+    "stopped": "risk_control",
+    "trial_mode": false,
+    "replay": false,
+    "total_candidates": 28,
+    "estimated_queries": 60,
+    "hint_queries": 1,
+    "price_hints": {},
+    "selected": 0,
+    "truncated": true,
+    "pattern_skipped": 0,
+    "evaluated_candidates": 0,
+    "over_budget_candidates": 0,
+    "elapsed_s": 1.2
+  },
+  "plans": [],
+  "per_destination_best": {
+    "三亚": null,
+    "厦门": null
+  },
+  "unavailable": [],
+  "unavailable_hints": [
+    "当前不接受中转，接受中转可能更便宜",
+    "为控制查询量（单次 ≤30 次），另有 28 个日期组合未查询；缩小时间窗口或固定晚数可覆盖更全"
+  ],
+  "min_feasible_total": null,
+  "not_queried": [
+    "三亚|2026-11-19|3n|after_work|free_day",
+    "三亚|2026-11-20|3n|after_work|day_off",
+    "三亚|2026-12-03|3n|after_work|free_day",
+    "三亚|2026-12-04|3n|after_work|day_off",
+    "厦门|2026-11-19|3n|after_work|free_day",
+    "厦门|2026-11-20|3n|after_work|day_off",
+    "厦门|2026-12-03|3n|after_work|free_day",
+    "厦门|2026-12-04|3n|after_work|day_off",
+    "三亚|2026-11-20|2n|after_work|free_day",
+    "三亚|2026-11-27|2n|after_work|free_day",
+    "三亚|2026-12-04|2n|after_work|free_day",
+    "三亚|2026-12-11|2n|after_work|free_day",
+    "厦门|2026-11-20|2n|after_work|free_day",
+    "厦门|2026-11-27|2n|after_work|free_day",
+    "厦门|2026-12-04|2n|after_work|free_day",
+    "厦门|2026-12-11|2n|after_work|free_day",
+    "三亚|2026-11-19|2n|after_work|free_day",
+    "三亚|2026-11-20|2n|day_off|free_day",
+    "三亚|2026-11-21|2n|free_day|day_off",
+    "三亚|2026-12-03|2n|after_work|free_day",
+    "三亚|2026-12-04|2n|day_off|free_day",
+    "三亚|2026-12-05|2n|free_day|day_off",
+    "厦门|2026-11-19|2n|after_work|free_day",
+    "厦门|2026-11-20|2n|day_off|free_day",
+    "厦门|2026-11-21|2n|free_day|day_off",
+    "厦门|2026-12-03|2n|after_work|free_day",
+    "厦门|2026-12-04|2n|day_off|free_day",
+    "厦门|2026-12-05|2n|free_day|day_off"
+  ],
+  "notes": [
+    "价格以飞猪预订页为准；酒店为每晚参考起价；火车余票需自行确认"
+  ],
+  "system_messages": [],
+  "ok": true,
+  "validation": {
+    "warnings": [],
+    "applied": []
+  },
+  "candidate_stats": {
+    "enumerated": 102,
+    "rejected_mid_leave": 66,
+    "rejected_ret": 12,
+    "rejected_leave_cap": 4,
+    "candidates": 28
+  }
+}

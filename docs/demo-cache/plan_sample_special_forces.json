@@ -1,0 +1,129 @@
+{
+  "generated_for": "2026-10-15",
+  "goal": "balance",
+  "goal_cn": "兼顾",
+  "replay": false,
+  "recorded_at": {
+    "first": "2026-10-15T11:20",
+    "last": "2026-10-15T11:23"
+  },
+  "errors": [
+    {
+      "code": "risk_control",
+      "message": "飞猪接口触发风控（短时间调用过多），已停止后续查询，请稍后重试",
+      "args": [
+        "search-flight",
+        "--origin",
+        "三亚",
+        "--destination",
+        "上海",
+        "--dep-date",
+        "2026-11-30",
+        "--sort-type",
+        "3"
+      ]
+    }
+  ],
+  "warnings": [
+    "苏州→三亚 在 2026-11-27, 2026-11-28 没有查到航班（该日无航班或接口无数据）"
+  ],
+  "meta": {
+    "live_calls": 9,
+    "cache_hits": 2,
+    "skipped": 0,
+    "max_calls": 30,
+    "stopped": "risk_control",
+    "trial_mode": false,
+    "replay": false,
+    "total_candidates": 29,
+    "estimated_queries": 102,
+    "hint_queries": 2,
+    "price_hints": {
+      "out|三亚|2026-11-20": 892.0,
+      "out|三亚|2026-11-21": 829.0,
+      "out|三亚|2026-11-22": 839.0,
+      "out|三亚|2026-11-23": 829.0,
+      "out|三亚|2026-11-30": 874.0,
+      "out|三亚|2026-12-01": 873.0,
+      "out|三亚|2026-12-05": 873.0,
+      "ret|三亚|2026-11-21": 599.0,
+      "ret|三亚|2026-11-22": 920.0,
+      "ret|三亚|2026-11-30": 518.0,
+      "ret|三亚|2026-12-09": 717.0
+    },
+    "selected": 3,
+    "truncated": true,
+    "pattern_skipped": 2,
+    "evaluated_candidates": 0,
+    "over_budget_candidates": 0,
+    "elapsed_s": 52.6
+  },
+  "plans": [],
+  "per_destination_best": {},
+  "unavailable": [
+    {
+      "candidate_id": "三亚|2026-11-27|3n|after_work|straight_to_work",
+      "status": "no_out",
+      "reason": "去程找不到满足约束的航班/衔接"
+    },
+    {
+      "candidate_id": "三亚|2026-11-20|3n|after_work|straight_to_work",
+      "status": "no_out",
+      "reason": "去程找不到满足约束的航班/衔接"
+    },
+    {
+      "candidate_id": "三亚|2026-11-28|2n|free_day|straight_to_work",
+      "status": "no_ret",
+      "reason": "回程找不到能按时到家的航班/衔接"
+    }
+  ],
+  "unavailable_hints": [
+    "部分返程按当前「最晚到家时间」赶不上，放宽到家时间或接受回程红眼可增加选择",
+    "同类出发/返程方式连续两次无结果，已跳过其余 2 个同类日期组合以节省查询",
+    "为控制查询量（单次 ≤30 次），另有 24 个日期组合未查询；缩小时间窗口或固定晚数可覆盖更全"
+  ],
+  "not_queried": [
+    "三亚|2026-11-21|2n|free_day|straight_to_work",
+    "三亚|2026-12-05|2n|free_day|straight_to_work",
+    "三亚|2026-11-27|2n|after_work|free_day",
+    "三亚|2026-12-04|2n|after_work|free_day",
+    "三亚|2026-12-11|2n|after_work|free_day",
+    "三亚|2026-12-12|2n|free_day|straight_to_work",
+    "三亚|2026-12-18|2n|after_work|free_day",
+    "三亚|2026-11-20|2n|after_work|free_day",
+    "三亚|2026-11-27|3n|after_work|day_off",
+    "三亚|2026-11-21|3n|free_day|straight_to_work",
+    "三亚|2026-12-05|3n|free_day|straight_to_work",
+    "三亚|2026-11-20|3n|after_work|day_off",
+    "三亚|2026-11-20|3n|day_off|straight_to_work",
+    "三亚|2026-11-28|3n|free_day|straight_to_work",
+    "三亚|2026-12-04|3n|after_work|day_off",
+    "三亚|2026-11-19|3n|after_work|free_day",
+    "三亚|2026-11-28|2n|free_day|day_off",
+    "三亚|2026-11-19|2n|after_work|free_day",
+    "三亚|2026-11-21|2n|free_day|day_off",
+    "三亚|2026-11-22|2n|free_day|straight_to_work",
+    "三亚|2026-12-05|2n|free_day|day_off",
+    "三亚|2026-11-29|2n|free_day|straight_to_work",
+    "三亚|2026-12-06|2n|free_day|straight_to_work",
+    "三亚|2026-11-20|2n|day_off|free_day"
+  ],
+  "notes": [
+    "价格以飞猪预订页为准；酒店为每晚参考起价；火车余票需自行确认"
+  ],
+  "system_messages": [],
+  "ok": true,
+  "validation": {
+    "warnings": [],
+    "applied": [
+      "特种兵模式：已放开去程、回程红眼航班"
+    ]
+  },
+  "candidate_stats": {
+    "enumerated": 67,
+    "rejected_mid_leave": 46,
+    "rejected_ret": 0,
+    "rejected_leave_cap": 1,
+    "candidates": 29
+  }
+}
