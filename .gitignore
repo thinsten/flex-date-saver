@@ -13,3 +13,4 @@ out/
 dist/
 tools/.deploy_state.json
 tools/vendor/
+data/

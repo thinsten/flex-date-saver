@@ -60,14 +60,59 @@
   .ok{color:var(--ok);font-weight:600}
   .disabled{opacity:.55;pointer-events:none}
   @media (max-width:560px){header h1{font-size:20px}.grid{grid-template-columns:1fr 1fr}.seg label{padding:7px 10px}}
+  /* ---- 服务器模式 ---- */
+  .srv{display:none}
+  body.server .srv{display:block}
+  body.server .copyonly{display:none}
+  #nl textarea{width:100%;min-height:72px;font:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;resize:vertical}
+  #nlNotes{font-size:13px;color:var(--sub);margin:8px 0 0}
+  #nlNotes li{margin:2px 0}
+  .toprow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .linkbtn{background:none;border:0;color:var(--acc);padding:4px 0;font-weight:600;cursor:pointer}
+  #result h3{margin:18px 0 8px;font-size:16px}
+  .sum{background:var(--acc-soft);border-radius:10px;padding:12px 14px;font-weight:600;margin:8px 0}
+  .tbl{width:100%;border-collapse:collapse;font-size:14px;margin:6px 0 10px}
+  .tbl th,.tbl td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+  .tbl th{background:#faf8f3}
+  .plan{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:12px 0}
+  .plan h4{margin:0 0 8px;font-size:15px}
+  .leg{margin:6px 0;font-size:14px}
+  .leg b{display:inline-block;min-width:44px}
+  .flags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+  .flag{font-size:12px;background:#fff4e6;color:#d9480f;border-radius:6px;padding:1px 7px}
+  .hotelpic{max-width:220px;border-radius:8px;display:block;margin:6px 0}
+  .goalbar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+  .goalbar button{padding:7px 14px;border:1px solid var(--line);background:#fff;color:var(--ink);font-weight:500}
+  .goalbar button.on{border-color:var(--acc);background:var(--acc-soft);color:var(--acc);font-weight:600}
+  .muted{color:var(--sub);font-size:13px}
+  .warnbox{background:#fff5f5;color:var(--warn);border-radius:10px;padding:10px 14px;margin:8px 0;font-size:14px}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--acc);border-right-color:transparent;border-radius:50%;animation:sp 1s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  #login{position:fixed;inset:0;background:rgba(246,244,239,.97);z-index:20;display:none;align-items:center;justify-content:center}
+  #login .box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;width:min(340px,90vw)}
+  #history{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:15;display:none}
+  #history .panel{position:absolute;right:0;top:0;bottom:0;width:min(420px,92vw);background:#fff;padding:18px;overflow:auto}
+  .hitem{border-bottom:1px solid var(--line);padding:10px 0;cursor:pointer}
+  .hitem:hover{background:#faf8f3}
+  body.share main>form,body.share .bar,body.share #nl,body.share header .toprow .srvbtns{display:none}
 </style>
+<!--FDS_SERVER-->
 </head>
 <body>
 <header>
-  <h1>弹性日期省钱规划 · 需求单</h1>
-  <p>点选填写你的约束，生成需求单后粘贴给智能体。大部分项已有默认值，只改需要改的。</p>
+  <div class="toprow"><h1>弹性日期省钱规划<span class="copyonly"> · 需求单</span></h1>
+    <span class="srv srvbtns"><button type="button" class="linkbtn" id="btnHistory">历史规划</button></span></div>
+  <p class="copyonly">点选填写你的约束，生成需求单后粘贴给智能体。大部分项已有默认值，只改需要改的。</p>
+  <p class="srv" id="subtitle">说一句需求让 AI 帮你填表，或直接点选。确认表单后点「开始规划」，用飞猪实时报价算出最省 / 最多玩的出发方案。</p>
 </header>
 <main>
+<section id="nl" class="srv">
+  <h2><span class="tag">AI</span>一句话说需求（可选）</h2>
+  <textarea id="nlText" placeholder="例：我在苏州，12 月想和女朋友去三亚玩 3 晚，最多请 1 天假，周五 18 点下班，不坐红眼，住四星，越省越好"></textarea>
+  <div class="row" style="margin-top:8px"><button type="button" class="primary" id="btnParse" style="padding:9px 18px">AI 帮我填表</button>
+    <span class="muted" id="nlStatus"></span></div>
+  <ul id="nlNotes"></ul>
+</section>
 <form id="f" onsubmit="return false">
 
 <section id="secA">
@@ -177,17 +222,30 @@
   <div class="grid"><label class="f"><b>总预算上限（元，可选）</b><input type="number" id="budget" min="0" placeholder="不设上限"></label></div>
 </section>
 
-<section id="preview">
+<section id="preview" class="copyonly">
   <h2>需求单预览 <span id="copied" class="ok"></span></h2>
   <pre id="out"></pre>
   <div class="hint">复制后粘贴到「弹性日期省钱规划」智能体对话框，它会先复述确认，再查真实报价。</div>
 </section>
 <div class="errs" id="errs"></div>
 </form>
+<section id="result" class="srv" style="display:none"></section>
 </main>
+<div id="login"><div class="box">
+  <h2 style="margin:0 0 6px;font-size:18px">弹性日期省钱规划</h2>
+  <p class="muted" style="margin:0 0 14px">输入访问密码</p>
+  <input type="password" id="pw" placeholder="访问密码" autocomplete="current-password">
+  <button type="button" class="primary" id="btnLogin" style="width:100%;margin-top:12px">进入</button>
+  <div class="errs" id="loginErr"></div>
+</div></div>
+<div id="history"><div class="panel">
+  <div class="toprow"><h2 style="margin:0;font-size:17px">历史规划</h2><button type="button" class="linkbtn" id="btnHistClose">关闭</button></div>
+  <div id="histList" class="muted" style="margin-top:10px">加载中…</div>
+</div></div>
 <div class="bar">
-  <button type="button" class="ghost" id="btnGen">生成需求单</button>
-  <button type="button" class="primary" id="btnCopy">一键复制</button>
+  <button type="button" class="ghost copyonly" id="btnGen">生成需求单</button>
+  <button type="button" class="primary copyonly" id="btnCopy">一键复制</button>
+  <button type="button" class="primary srv" id="btnPlan">开始规划</button>
 </div>
 
 <script>
@@ -357,6 +415,235 @@ $("btnGen").onclick = gen; $("btnCopy").onclick = copy;
   const t = new Date(); const s = new Date(t.getFullYear(), t.getMonth(), t.getDate() + 14), e = new Date(s.getFullYear(), s.getMonth(), s.getDate() + 30);
   $("wStart").value = iso(s); $("wEnd").value = iso(e); renderCal(); renderNearby(); syncHotel();
 })();
+
+/* ================= 服务器模式（自部署网页） ================= */
+function setChecks(name, vals){ document.querySelectorAll(`input[name=${name}]`).forEach(i => i.checked = vals.map(String).includes(i.value)); }
+function nearestOpt(sel, v){ const opts = [...$(sel).options].map(o => Number(o.value)); $(sel).value = String(opts.reduce((a, b) => Math.abs(b - v) < Math.abs(a - v) ? b : a)); }
+function fill(r){
+  r = r || {};
+  if (r.home_city){ $("home").value = r.home_city; extraStations = []; nearbySel.clear(); }
+  const d = r.destinations || [];
+  if (d.length){ $("dest1").value = d[0] || ""; $("dest2").value = d[1] || ""; }
+  if (r.window){ if (r.window.start) $("wStart").value = r.window.start; if (r.window.end) $("wEnd").value = r.window.end; }
+  if (r.nights){ if (r.nights.min) $("nMin").value = r.nights.min; $("nMax").value = r.nights.max || r.nights.min || $("nMax").value; }
+  if (r.travelers){ if (r.travelers.adults) $("adults").value = r.travelers.adults; if (r.travelers.children != null) $("children").value = r.travelers.children; }
+  if (r.rooms) $("rooms").value = r.rooms;
+  if (r.work){ if (r.work.off_time) $("offTime").value = r.work.off_time; if (r.work.start_time) $("startTime").value = r.work.start_time; }
+  if (r.return_home_by) $("homeBy").value = r.return_home_by;
+  if (r.leave){ if (r.leave.max_days != null) $("maxLeave").value = r.leave.max_days; if (r.leave.allowed_dates) leaveSel = new Set(r.leave.allowed_dates); }
+  const t = r.transport || {};
+  if (t.redeye_out != null) $("redeyeOut").checked = !!t.redeye_out;
+  if (t.redeye_back != null) $("redeyeBack").checked = !!t.redeye_back;
+  if (t.transfer_ok != null) $("transferOk").checked = !!t.transfer_ok;
+  if (t.max_layover_min) nearestOpt("layover", t.max_layover_min);
+  if (t.max_train_min) nearestOpt("maxTrain", t.max_train_min);
+  if (t.nearby_cities) nearbySel = new Set(t.nearby_cities);
+  if (t.nearby_origin_ok != null) $("nearbyOk").checked = !!t.nearby_origin_ok && (t.nearby_cities || []).length > 0;
+  if (t.cabin) $("cabin").value = t.cabin;
+  if (t.train_seat) setChecks("seat", [].concat(t.train_seat));
+  const h = r.hotel || {};
+  if (h.mode) document.querySelector(`input[name=hmode][value=${h.mode === "specific" ? "specific" : "filter"}]`).checked = true;
+  if (h.stars) setChecks("star", h.stars);
+  if (h.types) setChecks("htype", h.types);
+  if (h.chain){ if (String(h.chain).startsWith("brand:")){ $("chain").value = "brand"; $("brand").value = h.chain.slice(6); } else $("chain").value = h.chain; }
+  if (h.area != null) $("area").value = h.area;
+  if ("price_min" in h) $("pMin").value = h.price_min == null ? "" : h.price_min;
+  if ("price_max" in h) $("pMax").value = h.price_max == null ? "" : h.price_max;
+  if (h.specific_name) $("hName").value = h.specific_name;
+  const g = r.goal || {};
+  if (g.priority) document.querySelector(`input[name=goal][value=${g.priority}]`).checked = true;
+  if (g.special_forces != null){ $("sf").checked = !!g.special_forces; }
+  if ("budget_total" in g) $("budget").value = g.budget_total == null ? "" : g.budget_total;
+  renderStations();
+  (r.stations || []).forEach(s => {
+    const all = [...$("stations").querySelectorAll("input[data-name]")];
+    const inp = s.generic ? all.find(i => i.dataset.type === s.generic)
+      : all.find(i => i.dataset.name === s.name || i.dataset.name.includes(s.name) || s.name.includes(i.dataset.name) || s.name.replace(/机场|国际|站/g, "").length > 1 && i.dataset.name.includes(s.name.replace(/机场|国际|站/g, "")));
+    if (s.generic && !inp) return;
+    if (inp){ if (s.commute_min != null) inp.value = s.commute_min; }
+    else { extraStations.push([s.name, s.type === "air" ? "air" : "train"]); renderStations();
+      const i2 = [...$("stations").querySelectorAll("input[data-name]")].find(i => i.dataset.name === s.name); if (i2 && s.commute_min != null) i2.value = s.commute_min; }
+  });
+  renderCal(); renderNearby(); syncSF(); syncHotel();
+}
+
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const money = v => "¥" + Math.round(v);
+const md = d => d ? d.slice(5).replace("-", "/") : "";
+const GOALS = {save:"省钱优先", balance:"兼顾", play:"多玩优先"};
+let curJob = null, pollTimer = null;
+
+async function api(path, body){
+  const r = await fetch(path, body === undefined ? {credentials:"same-origin"} : {method:"POST", credentials:"same-origin", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+  let d = {}; try { d = await r.json(); } catch (e) {}
+  if (r.status === 401 && d.error === "need_login"){ showLogin(); throw new Error("need_login"); }
+  return {status: r.status, ...d};
+}
+function showLogin(){ $("login").style.display = "flex"; setTimeout(() => $("pw").focus(), 50); }
+async function login(){
+  const d = await api("/api/login", {password: $("pw").value});
+  if (d.ok){ $("login").style.display = "none"; $("loginErr").textContent = ""; }
+  else $("loginErr").textContent = d.message || "登录失败";
+}
+
+async function parseNL(){
+  const text = $("nlText").value.trim(); if (!text) return;
+  $("btnParse").disabled = true; $("nlStatus").innerHTML = '<span class="spinner"></span>AI 正在理解你的需求…'; $("nlNotes").innerHTML = "";
+  try {
+    const d = await api("/api/parse", {text});
+    if (!d.ok){ $("nlStatus").textContent = d.message || "没理解成功，请直接填表"; return; }
+    fill(d.request);
+    $("nlStatus").textContent = "已填好下面的表单，请检查并修改，然后点「开始规划」";
+    $("nlNotes").innerHTML = (d.notes || []).map(n => `<li>${esc(n)}</li>`).join("");
+    $("secA").scrollIntoView({behavior:"smooth"});
+  } catch (e) { if (e.message !== "need_login") $("nlStatus").textContent = "网络出错，请重试"; }
+  finally { $("btnParse").disabled = false; }
+}
+
+function showResult(html){ const r = $("result"); r.style.display = "block"; r.innerHTML = html; }
+async function startPlan(){
+  const req = build(); if (!req) { $("errs").scrollIntoView({behavior:"smooth", block:"center"}); return; }
+  $("btnPlan").disabled = true;
+  try {
+    const d = await api("/api/plan", {request: req});
+    if (!d.ok){
+      const items = [...(d.missing || []).map(m => "缺少：" + m.message),
+                     ...(d.conflicts || []).map(c => c.message + (c.suggestions && c.suggestions.length ? "（可以：" + c.suggestions.join("；") + "）" : ""))];
+      $("errs").innerHTML = items.length ? items.map(x => "· " + esc(x)).join("<br>") : esc(d.message || "提交失败");
+      $("errs").scrollIntoView({behavior:"smooth", block:"center"});
+      return;
+    }
+    $("errs").innerHTML = "";
+    history.replaceState(null, "", "#job/" + d.id);
+    pollJob(d.id);
+  } catch (e) {} finally { $("btnPlan").disabled = false; }
+}
+function pollJob(id){
+  clearTimeout(pollTimer); curJob = id;
+  const tick = async () => {
+    let d; try { d = await api("/api/job/" + id); } catch (e) { return; }
+    if (curJob !== id) return;
+    if (d.status === "queued" || d.status === "running"){
+      showResult(`<h2>正在规划</h2><p><span class="spinner"></span>${d.status === "queued" ? `排队中，前面还有 ${Math.max(d.position - 1, 0)} 个规划` : `正在查询飞猪实时报价，约 1 分钟…已用 ${d.elapsed || 0} 秒`}</p><p class="muted">${esc(d.title)}</p>`);
+      $("result").scrollIntoView({behavior:"smooth"});
+      pollTimer = setTimeout(tick, 2500); return;
+    }
+    renderJob(d);
+  };
+  tick();
+}
+function legHtml(label, leg){
+  const out = [];
+  if (leg.train && label === "去程") out.push(segHtml("火车", leg.train, true));
+  out.push(segHtml("航班", leg.flight, false));
+  if (leg.train && label === "回程") out.push(segHtml("火车", leg.train, true));
+  return out.join("");
+}
+function segHtml(kind, j, isTrain){
+  const s = j.segments, a = s[0], z = s[s.length - 1];
+  const route = s.map(x => `${esc(x.no)} ${x.dep.slice(5, 16)} ${esc(x.from_full || x.from)} → ${esc(x.to_full || x.to)} ${x.arr.slice(11, 16)}`).join(" / ");
+  return `<div class="leg"><b>${kind}</b> ${route}｜${isTrain ? esc(a.seat || "二等座") : "经济舱"}｜${money(j.price)}/人${isTrain ? '<span class="muted">（余票需自行确认）</span>' : ""} <a href="${esc(j.url)}" target="_blank" rel="noopener">点击预订</a></div>`;
+}
+function reasonText(p){
+  const f = p.reason_facts; if (!f) return "";
+  const bits = [];
+  if (f.price_diff > 0) bits.push(`比方案 ${f.compare_with_rank} 便宜 ${money(f.price_diff)}`);
+  if (f.price_diff < 0) bits.push(`比方案 ${f.compare_with_rank} 贵 ${money(-f.price_diff)}`);
+  if (f.slot_diff > 0) bits.push(`多玩 ${f.slot_diff} 个时段`);
+  if (f.slot_diff < 0) bits.push(`少玩 ${-f.slot_diff} 个时段`);
+  if (f.leave_diff > 0) bits.push(`少请 ${f.leave_diff} 天假`);
+  if (f.leave_diff < 0) bits.push(`多请 ${-f.leave_diff} 天假`);
+  return bits.length ? bits.join("，") : `与方案 ${f.compare_with_rank} 各项相同`;
+}
+function renderPlan(plan, shareUrl, readonly){
+  const P = plan.plans || [];
+  let h = "";
+  if (plan.replay) h += `<div class="warnbox">本次使用回放数据，价格可能已变化</div>`;
+  const fatal = (plan.errors || []).filter(e => ["key_invalid", "trial_mode", "cli_missing", "cli_too_old"].includes(e.code));
+  if (fatal.length) return h + `<div class="warnbox">飞猪接口暂时不可用，无法获取正式报价：${esc(fatal[0].message)}</div>`;
+  if ((plan.errors || []).some(e => e.code === "risk_control")) h += `<div class="warnbox">飞猪接口短时间调用过多被限流，以下只包含已查到的部分，约 10~20 分钟后可重试</div>`;
+  if (!readonly) h += `<div class="goalbar">${Object.entries(GOALS).map(([k, v]) => `<button type="button" data-goal="${k}" class="${plan.goal === k ? "on" : ""}">${v}</button>`).join("")}<span class="muted" style="align-self:center">切换只重新排序，不重新查价</span></div>`;
+  if (!P.length){
+    h += `<div class="sum">在当前条件下没有找到可行方案</div>`;
+  } else {
+    const p = P[0];
+    h += `<div class="sum">首选：${esc(p.dest)} ${md(p.out_date)}（${p.out_weekday}）→ ${md(p.ret_date)}（${p.ret_weekday}），总价 ${money(p.price.total)}，请 ${p.leave_days} 天假，可玩 ${p.slot_count} 个时段${p.save_vs_max > 0 ? `，比最贵方案省 ${money(p.save_vs_max)}` : ""}</div>`;
+    h += `<table class="tbl"><tr><th>方案</th><th>出发 → 返回</th><th>请假</th><th>可玩时段</th><th>总价</th><th>比最贵省</th></tr>` +
+      P.map(x => `<tr><td>${x.rank}. ${esc(x.dest)}</td><td>${md(x.out_date)} ${x.out_weekday} → ${md(x.ret_date)} ${x.ret_weekday}</td><td>${x.leave_days} 天${x.leave_dates.length ? "（" + x.leave_dates.map(md).join("、") + "）" : ""}</td><td>${x.slot_count}</td><td>${money(x.price.total)}</td><td>${money(x.save_vs_max)}</td></tr>`).join("") + `</table>`;
+    P.forEach(x => {
+      const pr = x.price, ho = x.hotel;
+      h += `<div class="plan"><h4>方案 ${x.rank}｜${esc(x.dest)} ${md(x.out_date)} → ${md(x.ret_date)}，${x.nights} 晚，${money(pr.total)}</h4>
+        <div class="muted">去程：${esc(x.out_mode)}，${x.out.leave_home ? x.out.leave_home.slice(11) + " 出门" : ""}；回程：${esc(x.ret_mode)}，${x.ret.home_arrive ? x.ret.home_arrive.slice(5, 16) + " 到家" : ""}</div>
+        ${legHtml("去程", x.out)}${legHtml("回程", x.ret)}
+        <div class="leg"><b>酒店</b> ${esc(ho.name)}｜${esc(ho.star)}｜每晚参考起价 ${money(ho.price_per_night)} × ${pr.hotel_nights} 晚 × ${pr.rooms} 间 = ${money(pr.hotel_total)} <a href="${esc(ho.url)}" target="_blank" rel="noopener">点击预订</a>
+          ${ho.pic ? `<img class="hotelpic" loading="lazy" src="${esc(ho.pic)}" alt="">` : ""}
+          ${(x.hotel_alts || []).length ? `<div class="muted">备选：${x.hotel_alts.map(a => `${esc(a.name)} ${money(a.price_per_night)}/晚 <a href="${esc(a.url)}" target="_blank" rel="noopener">预订</a>`).join("｜")}</div>` : ""}</div>
+        <div class="leg"><b>总价</b> 交通 ${money(pr.transport_per_person)} × ${pr.persons} 人 + 酒店 ${money(pr.hotel_total)} = ${money(pr.total)}</div>
+        <div class="leg"><b>时段</b> ${Object.entries(x.slots).map(([d, s]) => `${md(d)} ${s.join("、")}`).join("；")}</div>
+        ${x.reason_facts ? `<div class="leg"><b>理由</b> ${reasonText(x)}</div>` : ""}
+        <div class="flags">${x.flags.map(f => `<span class="flag">${esc(f)}</span>`).join("")}</div></div>`;
+    });
+  }
+  const pd = plan.per_destination_best || {};
+  if (Object.keys(pd).length > 1){
+    h += `<h3>各目的地最优方案</h3><table class="tbl"><tr><th>目的地</th><th>出发 → 返回</th><th>请假</th><th>可玩时段</th><th>总价</th></tr>` +
+      Object.entries(pd).map(([k, v]) => v ? `<tr><td>${esc(k)}</td><td>${md(v.out_date)} → ${md(v.ret_date)}</td><td>${v.leave_days} 天</td><td>${v.slot_count}</td><td>${money(v.total)}</td></tr>` : `<tr><td>${esc(k)}</td><td colspan="4">没有可行方案</td></tr>`).join("") + `</table>`;
+  }
+  if ((plan.unavailable_hints || []).length) h += `<h3>为什么有些日期没有方案</h3><ul>${plan.unavailable_hints.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
+  const w = (plan.warnings || []).slice(0, 6);
+  if (w.length) h += `<h3>提示</h3><ul class="muted">${w.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
+  h += `<p class="muted">${(plan.notes || []).map(esc).join("；")}</p>`;
+  if (shareUrl && !readonly) h += `<p><button type="button" class="ghost" id="btnShare">复制分享链接</button> <span class="muted" id="shareMsg"></span></p>`;
+  return h;
+}
+function renderJob(d){
+  if (d.status === "error"){ showResult(`<h2>规划结果</h2><div class="warnbox">${esc(d.error || "规划失败")}</div>`); return; }
+  if (!d.plan){ showResult(`<h2>规划结果</h2><div class="warnbox">结果不可用</div>`); return; }
+  const readonly = !!window.FDS_SHARE;
+  showResult(`<h2>规划结果</h2><p class="muted">${esc(d.title)}</p>` + renderPlan(d.plan, d.share_url, readonly));
+  if (!readonly){
+    $("result").querySelectorAll("[data-goal]").forEach(b => b.onclick = async () => {
+      b.disabled = true; const r = await api(`/api/job/${d.id}/goal`, {goal: b.dataset.goal}); if (r.ok) renderJob(r); else b.disabled = false;
+    });
+    const sb = $("btnShare"); if (sb) sb.onclick = async () => {
+      const url = location.origin + d.share_url;
+      try { await navigator.clipboard.writeText(url); $("shareMsg").textContent = "已复制，发给同行的朋友吧（对方无需密码，只能查看）"; }
+      catch (e) { $("shareMsg").textContent = url; }
+    };
+  }
+  $("result").scrollIntoView({behavior:"smooth"});
+}
+async function openHistory(){
+  $("history").style.display = "block"; $("histList").textContent = "加载中…";
+  const d = await api("/api/history");
+  const ST = {done:"", queued:"排队中", running:"规划中", error:"失败", invalid:"条件有误"};
+  $("histList").innerHTML = (d.items || []).length ? d.items.map(it => `<div class="hitem" data-id="${it.id}"><div><b>${esc(it.title || it.id)}</b> <span class="muted">${ST[it.status] || ""}</span></div><div class="muted">${new Date((it.created_at || 0) * 1000).toLocaleString("zh-CN", {hour12:false})} · ${esc(it.brief || "")}</div></div>`).join("") : "还没有规划记录";
+  $("histList").querySelectorAll(".hitem").forEach(el => el.onclick = async () => {
+    $("history").style.display = "none";
+    const j = await api("/api/job/" + el.dataset.id);
+    if (j.request) fill(j.request);
+    history.replaceState(null, "", "#job/" + el.dataset.id);
+    pollJob(el.dataset.id);
+  });
+}
+async function initServer(){
+  document.body.classList.add("server");
+  document.title = "弹性日期省钱规划";
+  if (window.FDS_SHARE){
+    document.body.classList.add("share");
+    const d = await api(`/api/share/${FDS_SHARE.id}?k=${FDS_SHARE.k}`);
+    if (d.ok) renderJob(d); else showResult('<div class="warnbox">链接无效或已过期</div>');
+    return;
+  }
+  $("btnParse").onclick = parseNL; $("btnPlan").onclick = startPlan; $("btnLogin").onclick = login;
+  $("pw").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+  $("btnHistory").onclick = openHistory; $("btnHistClose").onclick = () => $("history").style.display = "none";
+  const me = await api("/api/me");
+  if (!me.authed) showLogin();
+  const m = location.hash.match(/^#job\/([0-9a-f-]+)$/);
+  if (me.authed && m){ try { const j = await api("/api/job/" + m[1]); if (j.request) fill(j.request); pollJob(m[1]); } catch (e) {} }
+}
+if (window.FDS_SERVER) initServer();
 </script>
 </body>
 </html>

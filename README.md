@@ -53,6 +53,10 @@ flowchart LR
 └── tools/                      # 接口核验、录制、部署脚本
 ```
 
+## 自部署网页版
+
+除了百炼智能体，也可以部署成自己服务器上的网页：一句话描述需求由大模型回填表单，确认后点「开始规划」，结果页直接由脚本生成（不经过模型改写），支持切换目标、历史记录和免密分享链接。后端是 `server/app.py`（Python 标准库），部署脚本见 `tools/deploy_server.sh`，维护说明见 `AGENTS.md`。
+
 ## 部署到百炼 Managed Agent
 
 1. **运行环境**：预装 npm 包 `@fly-ai/flyai-cli@1.0.16`，网络策略 `unrestricted`（只能通过 API 设置，见 `tools/deploy_bailian.py`，一条命令完成打包上传、建环境、建智能体和冒烟测试；`tools/session_events.py` 可远程查看会话里的工具调用与回复）。

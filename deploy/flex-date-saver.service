@@ -1,0 +1,17 @@
+[Unit]
+Description=flex-date-saver web (弹性日期省钱规划)
+After=network-online.target
+
+[Service]
+Type=simple
+User=flex-date-saver
+Group=flex-date-saver
+WorkingDirectory=/opt/flex-date-saver
+EnvironmentFile=/etc/flex-date-saver.env
+ExecStart=/usr/bin/python3.11 /opt/flex-date-saver/server/app.py
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
