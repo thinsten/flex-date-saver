@@ -80,7 +80,7 @@
     "max_destinations": 2,
     "max_window_days": 62,
     "max_nights": 14,
-    "max_calls": 30,
+    "max_calls": 20,
     "min_interval_s": 4,
     "max_query_candidates": 6
   }
