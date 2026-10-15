@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 
 os.environ["FDS_TODAY"] = "2026-10-15"
+os.environ["FDS_RATE_FILE"] = tempfile.gettempdir() + "/fds-test-rate.json"  # 测试不与真实调用共享限流/熔断状态
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = ROOT / "skill" / "flex-date-saver" / "scripts"
 sys.path.insert(0, str(SCRIPTS))
