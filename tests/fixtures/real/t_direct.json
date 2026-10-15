@@ -1,0 +1,449 @@
+{
+ "args": [
+  "search-train",
+  "--origin",
+  "苏州",
+  "--destination",
+  "上海",
+  "--dep-date",
+  "2026-11-20",
+  "--journey-type",
+  "1",
+  "--sort-type",
+  "3"
+ ],
+ "recorded_at": "2026-10-15T10:28:43+0800",
+ "elapsed_s": 3.73,
+ "attempts": 1,
+ "returncode": 0,
+ "stdout": {
+  "data": {
+   "itemList": [
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "310100",
+         "arrCityName": "上海",
+         "arrDateTime": "2026-11-20 06:45:00",
+         "arrStationCode": "SHH",
+         "arrStationName": "上海站",
+         "arrStationShortName": "上海",
+         "arrTerm": null,
+         "arrWeekAbbrName": "周五",
+         "depCityAbroad": null,
+         "depCityCode": "320500",
+         "depCityName": "苏州",
+         "depDateTime": "2026-11-20 05:41:00",
+         "depStationCode": "SZH",
+         "depStationName": "苏州站",
+         "depStationShortName": "苏州",
+         "depTerm": null,
+         "depWeekAbbrName": "周五",
+         "duration": "64",
+         "marketingTransportName": "普快",
+         "marketingTransportNo": "1461",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "硬座",
+         "stopInfos": null,
+         "transportType": "火车"
+        }
+       ],
+       "totalDuration": "64",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F4UkB27",
+     "price": "12.50",
+     "totalDuration": "64"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "310100",
+         "arrCityName": "上海",
+         "arrDateTime": "2026-11-20 11:02:00",
+         "arrStationCode": "SHH",
+         "arrStationName": "上海站",
+         "arrStationShortName": "上海",
+         "arrTerm": null,
+         "arrWeekAbbrName": "周五",
+         "depCityAbroad": null,
+         "depCityCode": "320500",
+         "depCityName": "苏州",
+         "depDateTime": "2026-11-20 10:08:00",
+         "depStationCode": "SZH",
+         "depStationName": "苏州站",
+         "depStationShortName": "苏州",
+         "depTerm": null,
+         "depWeekAbbrName": "周五",
+         "duration": "54",
+         "marketingTransportName": "普快",
+         "marketingTransportNo": "T109",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "硬座",
+         "stopInfos": null,
+         "transportType": "火车"
+        }
+       ],
+       "totalDuration": "54",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3xJYHL",
+     "price": "14.50",
+     "totalDuration": "54"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "310100",
+         "arrCityName": "上海",
+         "arrDateTime": "2026-11-20 13:29:00",
+         "arrStationCode": "SHH",
+         "arrStationName": "上海站",
+         "arrStationShortName": "上海",
+         "arrTerm": null,
+         "arrWeekAbbrName": "周五",
+         "depCityAbroad": null,
+         "depCityCode": "320500",
+         "depCityName": "苏州",
+         "depDateTime": "2026-11-20 12:33:00",
+         "depStationCode": "SZH",
+         "depStationName": "苏州站",
+         "depStationShortName": "苏州",
+         "depTerm": null,
+         "depWeekAbbrName": "周五",
+         "duration": "56",
+         "marketingTransportName": "普快",
+         "marketingTransportNo": "Z375",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "硬座",
+         "stopInfos": null,
+         "transportType": "火车"
+        }
+       ],
+       "totalDuration": "56",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F35GFuF",
+     "price": "14.50",
+     "totalDuration": "56"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "310100",
+         "arrCityName": "上海",
+         "arrDateTime": "2026-11-20 12:21:00",
+         "arrStationCode": "SHH",
+         "arrStationName": "上海站",
+         "arrStationShortName": "上海",
+         "arrTerm": null,
+         "arrWeekAbbrName": "周五",
+         "depCityAbroad": null,
+         "depCityCode": "320500",
+         "depCityName": "苏州",
+         "depDateTime": "2026-11-20 11:24:00",
+         "depStationCode": "SZH",
+         "depStationName": "苏州站",
+         "depStationShortName": "苏州",
+         "depTerm": null,
+         "depWeekAbbrName": "周五",
+         "duration": "57",
+         "marketingTransportName": "普快",
+         "marketingTransportNo": "Z267",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "硬座",
+         "stopInfos": null,
+         "transportType": "火车"
+        }
+       ],
+       "totalDuration": "57",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F2RpSTT",
+     "price": "14.50",
+     "totalDuration": "57"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "310100",
+         "arrCityName": "上海",
+         "arrDateTime": "2026-11-20 12:15:00",
+         "arrStationCode": "SHH",
+         "arrStationName": "上海站",
+         "arrStationShortName": "上海",
+         "arrTerm": null,
+         "arrWeekAbbrName": "周五",
+         "depCityAbroad": null,
+         "depCityCode": "320500",
+         "depCityName": "苏州",
+         "depDateTime": "2026-11-20 11:17:00",
+         "depStationCode": "SZH",
+         "depStationName": "苏州站",
+         "depStationShortName": "苏州",
+         "depTerm": null,
+         "depWeekAbbrName": "周五",
+         "duration": "58",
+         "marketingTransportName": "普快",
+         "marketingTransportNo": "Z39",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "硬座",
+         "stopInfos": null,
+         "transportType": "火车"
+        }
+       ],
+       "totalDuration": "58",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F4ObuN1",
+     "price": "14.50",
+     "totalDuration": "58"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "310100",
+         "arrCityName": "上海",
+         "arrDateTime": "2026-11-20 13:20:00",
+         "arrStationCode": "SHH",
+         "arrStationName": "上海站",
+         "arrStationShortName": "上海",
+         "arrTerm": null,
+         "arrWeekAbbrName": "周五",
+         "depCityAbroad": null,
+         "depCityCode": "320500",
+         "depCityName": "苏州",
+         "depDateTime": "2026-11-20 12:21:00",
+         "depStationCode": "SZH",
+         "depStationName": "苏州站",
+         "depStationShortName": "苏州",
+         "depTerm": null,
+         "depWeekAbbrName": "周五",
+         "duration": "59",
+         "marketingTransportName": "普快",
+         "marketingTransportNo": "Z515",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "硬座",
+         "stopInfos": null,
+         "transportType": "火车"
+        }
+       ],
+       "totalDuration": "59",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F2OqOqw",
+     "price": "14.50",
+     "totalDuration": "59"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "310100",
+         "arrCityName": "上海",
+         "arrDateTime": "2026-11-20 22:28:00",
+         "arrStationCode": "SHH",
+         "arrStationName": "上海站",
+         "arrStationShortName": "上海",
+         "arrTerm": null,
+         "arrWeekAbbrName": "周五",
+         "depCityAbroad": null,
+         "depCityCode": "320500",
+         "depCityName": "苏州",
+         "depDateTime": "2026-11-20 21:27:00",
+         "depStationCode": "SZH",
+         "depStationName": "苏州站",
+         "depStationShortName": "苏州",
+         "depTerm": null,
+         "depWeekAbbrName": "周五",
+         "duration": "61",
+         "marketingTransportName": "普快",
+         "marketingTransportNo": "K8365",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "硬座",
+         "stopInfos": null,
+         "transportType": "火车"
+        }
+       ],
+       "totalDuration": "61",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3nCgqP",
+     "price": "14.50",
+     "totalDuration": "61"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "310100",
+         "arrCityName": "上海",
+         "arrDateTime": "2026-11-20 14:46:00",
+         "arrStationCode": "SHH",
+         "arrStationName": "上海站",
+         "arrStationShortName": "上海",
+         "arrTerm": null,
+         "arrWeekAbbrName": "周五",
+         "depCityAbroad": null,
+         "depCityCode": "320500",
+         "depCityName": "苏州",
+         "depDateTime": "2026-11-20 13:44:00",
+         "depStationCode": "SZH",
+         "depStationName": "苏州站",
+         "depStationShortName": "苏州",
+         "depTerm": null,
+         "depWeekAbbrName": "周五",
+         "duration": "62",
+         "marketingTransportName": "普快",
+         "marketingTransportNo": "K371",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "硬座",
+         "stopInfos": null,
+         "transportType": "火车"
+        }
+       ],
+       "totalDuration": "62",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F0tTjS0",
+     "price": "14.50",
+     "totalDuration": "62"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "310100",
+         "arrCityName": "上海",
+         "arrDateTime": "2026-11-20 13:14:00",
+         "arrStationCode": "SHH",
+         "arrStationName": "上海站",
+         "arrStationShortName": "上海",
+         "arrTerm": null,
+         "arrWeekAbbrName": "周五",
+         "depCityAbroad": null,
+         "depCityCode": "320500",
+         "depCityName": "苏州",
+         "depDateTime": "2026-11-20 12:11:00",
+         "depStationCode": "SZH",
+         "depStationName": "苏州站",
+         "depStationShortName": "苏州",
+         "depTerm": null,
+         "depWeekAbbrName": "周五",
+         "duration": "63",
+         "marketingTransportName": "普快",
+         "marketingTransportNo": "Z171",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "硬座",
+         "stopInfos": null,
+         "transportType": "火车"
+        }
+       ],
+       "totalDuration": "63",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1YtqCn",
+     "price": "14.50",
+     "totalDuration": "63"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "310100",
+         "arrCityName": "上海",
+         "arrDateTime": "2026-11-20 05:12:00",
+         "arrStationCode": "SHH",
+         "arrStationName": "上海站",
+         "arrStationShortName": "上海",
+         "arrTerm": null,
+         "arrWeekAbbrName": "周五",
+         "depCityAbroad": null,
+         "depCityCode": "320500",
+         "depCityName": "苏州",
+         "depDateTime": "2026-11-20 04:06:00",
+         "depStationCode": "SZH",
+         "depStationName": "苏州站",
+         "depStationShortName": "苏州",
+         "depTerm": null,
+         "depWeekAbbrName": "周五",
+         "duration": "66",
+         "marketingTransportName": "普快",
+         "marketingTransportNo": "K1555",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "硬座",
+         "stopInfos": null,
+         "transportType": "火车"
+        }
+       ],
+       "totalDuration": "66",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1ht9nl",
+     "price": "14.50",
+     "totalDuration": "66"
+    }
+   ]
+  },
+  "message": "success",
+  "status": 0,
+  "systemMessage": null
+ },
+ "stderr_tail": ""
+}

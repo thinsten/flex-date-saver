@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+cache/
+**/cache/
+request*.json
+!tests/**/request*.json
+__pycache__/
+*.pyc
+.DS_Store
+node_modules/
+out/

@@ -1,0 +1,87 @@
+# 阶段 0：飞猪 flyai-cli 接口核验结论
+
+- 核验时间：2026-10-15（北京时间）
+- 核验方式：本机真实调用，正式 API Key（返回里没有「体验模式」），原始返回全部录制在 `tests/fixtures/real/`，每个文件都带 `args` 和 `recorded_at`
+- 录制工具：`tools/probe.py` + `tools/probe_stage0.json`
+
+## 0. 版本必须固定为 @fly-ai/flyai-cli@1.0.16
+
+本机原先全局安装的是 1.0.5，没有 `search-train`，酒店命令叫 `search-hotels`，和文档对不上。1.0.16 才有文档里的 8 个命令（`search-hotel` 和 `search-hotels` 都能用）。
+
+- 百炼运行环境的预装包写死成 `@fly-ai/flyai-cli@1.0.16`，不写 latest
+- 脚本通过环境变量 `FLYAI_BIN` 指定可执行文件，默认值是 `flyai`
+
+## 1. 频控与风控（影响最大）
+
+| 现象 | 触发条件 | 返回 |
+|---|---|---|
+| 频控 | 5 路并发，前几个请求就出现 | `{"code":-32603,"message":"Rate limit exceeded, please try again later"}`，进程 rc=1 |
+| 风控 | 2 路并发，约 30 秒内连续调用了 20 次左右 | `{"code":-32603,"message":"Abnormal access behavior detected by risk control"}`，rc=1 |
+| 恢复 | 冷却 60 秒后改成串行调用 | 正常 |
+
+结论：
+
+- **只能串行调用**，两次调用之间至少间隔 1.5 秒
+- 遇到 Rate limit 就退避重试；遇到 risk control 就停止本次查询，在 errors 里写 `risk_control`，不再重试
+- 单次规划的调用预算从 60 次降到 **30 次**。单次调用耗时 1.5 到 7.5 秒（酒店最慢），30 次大约需要 1.5 到 3 分钟
+- 开发指南里写的「并发 5 路」作废
+
+## 2. 机票 search-flight
+
+| 核验项 | 结论 | 依据 |
+|---|---|---|
+| 单程 | 正常，单次最多返回 10 条，`--sort-type 3` 按价格从低到高排 | f_ow_out、f_ow_back |
+| **往返 `--back-date`** | **用正式 Key 查返回 `data:null`，message 为「搜索机票低价行业失败」**（用试用 Key 时能返回往返组合）。往返价改成两段单程价相加 | f_rt |
+| 日期区间 | 返回 10 条，按价格排序，**10 天只覆盖到 7 天**，有些日期会缺。加上 `--dep-hour-start 20` 后 10 天全覆盖（因为每天都有那一班） | f_range、f_range_evening |
+| 起飞时段 | `--dep-hour-start/end` 只看**第一段**的起飞时间 | f_redeye |
+| 到达时段 | `--arr-hour-end` 生效 | f_arr_end |
+| 中转 | `--journey-type 2` 会返回长时间中转，比如经成都中转，等 3.5 小时到 15 小时都有，需要脚本按等待时长过滤 | f_transfer |
+| 机场名作出发地 | 「浦东国际机场」生效，结果只有浦东出发的航班 | f_airport_name |
+| 城市名错误 | 也返回 `data:null` + 「搜索机票低价行业失败」，**和真的没有航班区分不开** | f_bad_city |
+| 远期日期 | 2026-12-31、2027-02-05 都有价，春节期间明显更贵（最低 1600 元，平日约 650 到 900 元） | f_newyear、f_cny |
+| 字段 | `ticketPrice`（字符串，比如 "809.00"）、`totalDuration`（分钟）、`jumpUrl`、`journeys[].segments[]`（`depDateTime`、`arrDateTime`、`depStationShortName`、`marketingTransportNo`、`seatClassName`） | — |
+
+## 3. 火车 search-train
+
+| 核验项 | 结论 | 依据 |
+|---|---|---|
+| `--seat-class-name` | 传「二等座」、传「second class」、不传，三种结果**完全一样**，可以认为参数不生效。返回的每一段只带一种座席，接口给的是哪个价就是哪个 | t_seat_cn、t_seat_en、t_seat_none |
+| 座席过滤 | 改成由脚本按 `seatClassName` 过滤。不加时段限制按价格排序时，返回的是硬座慢车（比如 1461 次，12.5 元），必须过滤 | t_direct |
+| 余票 | `quantity` 全部是 None | 全部 t_* |
+| 车站名作出发地 | 「苏州北 → 上海虹桥」生效 | t_station |
+| 字段 | `price`（字符串）、`totalDuration`、`jumpUrl`、`journeys[].segments[]` 结构和机票一样 | — |
+
+## 4. 酒店 search-hotel
+
+| 核验项 | 结论 | 依据 |
+|---|---|---|
+| 价格口径 | 住 3 晚和住 1 晚的 `price` 基本一样（比如 316 对 316、319 对 307），说明是**每晚起价**，不是总价 | h_star5_3n 对比 h_star5_1n |
+| 不传日期 | 价格明显偏低（192 对 316），**必须传入住和离店日期** | h_nodate |
+| 星级 | `--hotel-stars 5` 生效。返回的 `star` 是文字：五星级、豪华型对应 5，高档型对应 4，舒适型对应 3，经济型对应 2，有时是空格 | 全部 h_* |
+| **`--key-words` 区域** | **不生效**：搜「亚龙湾」，返回的是三亚湾、海棠湾、大东海的酒店 | h_star5_3n |
+| 行政区当目的地 | `--dest-name 三亚市吉阳区` 生效，结果基本都在吉阳区（亚龙湾就在吉阳区） | h_district |
+| **连锁识别** | **`brandName` 不可靠**：全季的 8 家门店 brandName 全是 None。改成用名称里的品牌词表识别连锁 | h_brand |
+| 品牌搜索 | `--key-words 全季` 能搜出全季门店，再用名称包含品牌词过滤一遍 | h_brand |
+| 类型 | `--hotel-types 民宿` 生效，返回的多是客栈和青旅，价格 26 到 50 元 | h_type |
+| 价格上限 | `--max-price 500` 和 `--sort price_asc` 都生效 | h_maxprice |
+| 条数 | 单次 7 到 11 条 | — |
+| 字段 | `shId`、`name`、`star`、`brandName`、`price`（比如 "¥316"）、`address`、`interestsPoi`、`latitude`、`longitude`、`mainPic`、`detailUrl` | — |
+
+## 5. 价格和预订页是否一致（需要人工核对）
+
+接口给的链接是 router.feizhu.com 跳转到 App 内的 webview，脚本没法抓到页面上的价格。需要用手机打开下面两条链接，和录制的价格对比：
+
+- 机票：f_ow_out 第 1 条，9C8779，11-20 06:40 虹桥飞凤凰，809 元
+- 酒店：h_star5_3n 第 1 条，三亚湾伯爵佰悦酒店，11-20 入住、11-23 离店，每晚起价 316 元
+
+## 6. 对开发指南 v1.0 的修订（v1.1 生效）
+
+| 指南位置 | 原来的写法 | 改成 |
+|---|---|---|
+| 2.7、阶段 3 | 并发 5 路，每次规划上限 60 次 | 串行调用、间隔至少 1.5 秒，上限 30 次；风控时停止查询并提示 |
+| 2.3、阶段 0 | 往返价待核验 | 往返价 = 两段单程价相加，不用 `--back-date` |
+| 2.3 | 火车按座席参数筛 | 脚本按 `seatClassName` 过滤 |
+| 2.5 | `brandName` 不为空就算连锁 | 用名称里的品牌词表识别（`config/chain_brands.json`） |
+| 2.5 | 区域用 `--key-words` 搜，再二次过滤 | 区域是行政区时，直接用 `--dest-name <城市+区>`；是商圈或景区（比如亚龙湾）时，用城市查，再按名称、地址、`interestsPoi` 过滤，过滤后为空就退回到城市级别并提示用户 |
+| 2.7 | 日期区间查询用来发现低价日 | 保留，但它覆盖不全，只能当作排序的线索；最终价格以逐日精确查询为准 |
+| 附录 D | npm `@fly-ai/flyai-cli` | `@fly-ai/flyai-cli@1.0.16` |

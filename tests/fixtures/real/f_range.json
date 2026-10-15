@@ -1,0 +1,461 @@
+{
+ "args": [
+  "search-flight",
+  "--origin",
+  "上海",
+  "--destination",
+  "三亚",
+  "--dep-date-start",
+  "2026-11-16",
+  "--dep-date-end",
+  "2026-11-25",
+  "--journey-type",
+  "1",
+  "--sort-type",
+  "3"
+ ],
+ "recorded_at": "2026-10-15T10:28:25+0800",
+ "elapsed_s": 1.74,
+ "attempts": 1,
+ "returncode": 0,
+ "stdout": {
+  "data": {
+   "itemList": [
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "SYX",
+         "arrCityName": "三亚",
+         "arrDateTime": "2026-11-16 21:50:00",
+         "arrStationCode": "SYX",
+         "arrStationName": "凤凰国际机场",
+         "arrStationShortName": "凤凰",
+         "arrTerm": "T2",
+         "arrWeekAbbrName": "周一",
+         "depCityAbroad": null,
+         "depCityCode": "SHA",
+         "depCityName": "上海",
+         "depDateTime": "2026-11-16 18:05:00",
+         "depStationCode": "PVG",
+         "depStationName": "浦东国际机场",
+         "depStationShortName": "浦东",
+         "depTerm": "T2",
+         "depWeekAbbrName": "周一",
+         "duration": "225",
+         "marketingTransportName": "春秋",
+         "marketingTransportNo": "9C8801",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "经济舱",
+         "stopInfos": null,
+         "transportType": "飞机"
+        }
+       ],
+       "totalDuration": "225",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F4ApZle",
+     "tags": null,
+     "ticketPrice": "650.00",
+     "totalDuration": "225"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "SYX",
+         "arrCityName": "三亚",
+         "arrDateTime": "2026-11-17 21:50:00",
+         "arrStationCode": "SYX",
+         "arrStationName": "凤凰国际机场",
+         "arrStationShortName": "凤凰",
+         "arrTerm": "T2",
+         "arrWeekAbbrName": "周二",
+         "depCityAbroad": null,
+         "depCityCode": "SHA",
+         "depCityName": "上海",
+         "depDateTime": "2026-11-17 18:05:00",
+         "depStationCode": "PVG",
+         "depStationName": "浦东国际机场",
+         "depStationShortName": "浦东",
+         "depTerm": "T2",
+         "depWeekAbbrName": "周二",
+         "duration": "225",
+         "marketingTransportName": "春秋",
+         "marketingTransportNo": "9C8801",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "经济舱",
+         "stopInfos": null,
+         "transportType": "飞机"
+        }
+       ],
+       "totalDuration": "225",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F4QPWSu",
+     "tags": null,
+     "ticketPrice": "650.00",
+     "totalDuration": "225"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "SYX",
+         "arrCityName": "三亚",
+         "arrDateTime": "2026-11-22 21:50:00",
+         "arrStationCode": "SYX",
+         "arrStationName": "凤凰国际机场",
+         "arrStationShortName": "凤凰",
+         "arrTerm": "T2",
+         "arrWeekAbbrName": "周日",
+         "depCityAbroad": null,
+         "depCityCode": "SHA",
+         "depCityName": "上海",
+         "depDateTime": "2026-11-22 18:05:00",
+         "depStationCode": "PVG",
+         "depStationName": "浦东国际机场",
+         "depStationShortName": "浦东",
+         "depTerm": "T2",
+         "depWeekAbbrName": "周日",
+         "duration": "225",
+         "marketingTransportName": "春秋",
+         "marketingTransportNo": "9C8801",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "经济舱",
+         "stopInfos": null,
+         "transportType": "飞机"
+        }
+       ],
+       "totalDuration": "225",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1MCN99",
+     "tags": null,
+     "ticketPrice": "650.00",
+     "totalDuration": "225"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "SYX",
+         "arrCityName": "三亚",
+         "arrDateTime": "2026-11-21 18:20:00",
+         "arrStationCode": "SYX",
+         "arrStationName": "凤凰国际机场",
+         "arrStationShortName": "凤凰",
+         "arrTerm": "T1",
+         "arrWeekAbbrName": "周六",
+         "depCityAbroad": null,
+         "depCityCode": "SHA",
+         "depCityName": "上海",
+         "depDateTime": "2026-11-21 14:55:00",
+         "depStationCode": "SHA",
+         "depStationName": "虹桥国际机场",
+         "depStationShortName": "虹桥",
+         "depTerm": "T2",
+         "depWeekAbbrName": "周六",
+         "duration": "205",
+         "marketingTransportName": "吉祥",
+         "marketingTransportNo": "HO1225",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "经济舱",
+         "stopInfos": null,
+         "transportType": "飞机"
+        }
+       ],
+       "totalDuration": "205",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3mdHYm",
+     "tags": null,
+     "ticketPrice": "700.00",
+     "totalDuration": "205"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "SYX",
+         "arrCityName": "三亚",
+         "arrDateTime": "2026-11-24 10:00:00",
+         "arrStationCode": "SYX",
+         "arrStationName": "凤凰国际机场",
+         "arrStationShortName": "凤凰",
+         "arrTerm": "T2",
+         "arrWeekAbbrName": "周二",
+         "depCityAbroad": null,
+         "depCityCode": "SHA",
+         "depCityName": "上海",
+         "depDateTime": "2026-11-24 06:45:00",
+         "depStationCode": "SHA",
+         "depStationName": "虹桥国际机场",
+         "depStationShortName": "虹桥",
+         "depTerm": "T1",
+         "depWeekAbbrName": "周二",
+         "duration": "195",
+         "marketingTransportName": "春秋",
+         "marketingTransportNo": "9C8779",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "经济舱",
+         "stopInfos": null,
+         "transportType": "飞机"
+        }
+       ],
+       "totalDuration": "195",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1bUJOk",
+     "tags": null,
+     "ticketPrice": "749.00",
+     "totalDuration": "195"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "SYX",
+         "arrCityName": "三亚",
+         "arrDateTime": "2026-11-17 10:00:00",
+         "arrStationCode": "SYX",
+         "arrStationName": "凤凰国际机场",
+         "arrStationShortName": "凤凰",
+         "arrTerm": "T2",
+         "arrWeekAbbrName": "周二",
+         "depCityAbroad": null,
+         "depCityCode": "SHA",
+         "depCityName": "上海",
+         "depDateTime": "2026-11-17 06:45:00",
+         "depStationCode": "SHA",
+         "depStationName": "虹桥国际机场",
+         "depStationShortName": "虹桥",
+         "depTerm": "T1",
+         "depWeekAbbrName": "周二",
+         "duration": "195",
+         "marketingTransportName": "春秋",
+         "marketingTransportNo": "9C8779",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "经济舱",
+         "stopInfos": null,
+         "transportType": "飞机"
+        }
+       ],
+       "totalDuration": "195",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F4gQQWx",
+     "tags": null,
+     "ticketPrice": "750.00",
+     "totalDuration": "195"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "SYX",
+         "arrCityName": "三亚",
+         "arrDateTime": "2026-11-21 16:15:00",
+         "arrStationCode": "SYX",
+         "arrStationName": "凤凰国际机场",
+         "arrStationShortName": "凤凰",
+         "arrTerm": "T1",
+         "arrWeekAbbrName": "周六",
+         "depCityAbroad": null,
+         "depCityCode": "SHA",
+         "depCityName": "上海",
+         "depDateTime": "2026-11-21 12:50:00",
+         "depStationCode": "SHA",
+         "depStationName": "虹桥国际机场",
+         "depStationShortName": "虹桥",
+         "depTerm": "T2",
+         "depWeekAbbrName": "周六",
+         "duration": "205",
+         "marketingTransportName": "吉祥",
+         "marketingTransportNo": "HO1129",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "经济舱",
+         "stopInfos": null,
+         "transportType": "飞机"
+        }
+       ],
+       "totalDuration": "205",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1iBlY2",
+     "tags": null,
+     "ticketPrice": "750.00",
+     "totalDuration": "205"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "SYX",
+         "arrCityName": "三亚",
+         "arrDateTime": "2026-11-24 21:50:00",
+         "arrStationCode": "SYX",
+         "arrStationName": "凤凰国际机场",
+         "arrStationShortName": "凤凰",
+         "arrTerm": "T2",
+         "arrWeekAbbrName": "周二",
+         "depCityAbroad": null,
+         "depCityCode": "SHA",
+         "depCityName": "上海",
+         "depDateTime": "2026-11-24 18:05:00",
+         "depStationCode": "PVG",
+         "depStationName": "浦东国际机场",
+         "depStationShortName": "浦东",
+         "depTerm": "T2",
+         "depWeekAbbrName": "周二",
+         "duration": "225",
+         "marketingTransportName": "春秋",
+         "marketingTransportNo": "9C8801",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "经济舱",
+         "stopInfos": null,
+         "transportType": "飞机"
+        }
+       ],
+       "totalDuration": "225",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F0hf5DS",
+     "tags": null,
+     "ticketPrice": "779.00",
+     "totalDuration": "225"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "SYX",
+         "arrCityName": "三亚",
+         "arrDateTime": "2026-11-19 10:00:00",
+         "arrStationCode": "SYX",
+         "arrStationName": "凤凰国际机场",
+         "arrStationShortName": "凤凰",
+         "arrTerm": "T2",
+         "arrWeekAbbrName": "周四",
+         "depCityAbroad": null,
+         "depCityCode": "SHA",
+         "depCityName": "上海",
+         "depDateTime": "2026-11-19 06:45:00",
+         "depStationCode": "SHA",
+         "depStationName": "虹桥国际机场",
+         "depStationShortName": "虹桥",
+         "depTerm": "T1",
+         "depWeekAbbrName": "周四",
+         "duration": "195",
+         "marketingTransportName": "春秋",
+         "marketingTransportNo": "9C8779",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "经济舱",
+         "stopInfos": null,
+         "transportType": "飞机"
+        }
+       ],
+       "totalDuration": "195",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3f2N47",
+     "tags": null,
+     "ticketPrice": "809.00",
+     "totalDuration": "195"
+    },
+    {
+     "journeys": [
+      {
+       "journeyType": "直达",
+       "segments": [
+        {
+         "arrCityAbroad": false,
+         "arrCityCode": "SYX",
+         "arrCityName": "三亚",
+         "arrDateTime": "2026-11-18 10:00:00",
+         "arrStationCode": "SYX",
+         "arrStationName": "凤凰国际机场",
+         "arrStationShortName": "凤凰",
+         "arrTerm": "T2",
+         "arrWeekAbbrName": "周三",
+         "depCityAbroad": null,
+         "depCityCode": "SHA",
+         "depCityName": "上海",
+         "depDateTime": "2026-11-18 06:40:00",
+         "depStationCode": "SHA",
+         "depStationName": "虹桥国际机场",
+         "depStationShortName": "虹桥",
+         "depTerm": "T1",
+         "depWeekAbbrName": "周三",
+         "duration": "200",
+         "marketingTransportName": "春秋",
+         "marketingTransportNo": "9C8779",
+         "miles": null,
+         "quantity": null,
+         "seatClassName": "经济舱",
+         "stopInfos": null,
+         "transportType": "飞机"
+        }
+       ],
+       "totalDuration": "200",
+       "transferDuration": ""
+      }
+     ],
+     "jumpUrl": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3tK4Ac",
+     "tags": null,
+     "ticketPrice": "809.00",
+     "totalDuration": "200"
+    }
+   ]
+  },
+  "message": "success",
+  "status": 0,
+  "systemMessage": null
+ },
+ "stderr_tail": ""
+}
