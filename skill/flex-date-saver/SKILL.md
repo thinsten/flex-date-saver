@@ -22,7 +22,7 @@ description: 弹性日期省钱规划。用户给出常住城市、目的地（�
    `python3 scripts/validate_request.py --request /tmp/fds_run/request.json --out /tmp/fds_run/request.normalized.json`
    - 输出 `ok=false` 时，把 `missing`（缺项）和 `conflicts`（冲突及 suggestions）一次性问用户，不要逐项追问
    - `warnings` 和 `applied` 要在复述确认时告诉用户
-3. 用户确认后再查价（需要约 1~2 分钟）：
+3. 用户确认后再查价（需要约 1 分钟）：
    `python3 scripts/run_plan.py --request /tmp/fds_run/request.json --out /tmp/fds_run/plan.json --workdir /tmp/fds_run`
 4. 读取 `/tmp/fds_run/plan.json`，按系统提示词的输出模板展示
 5. 用户只改目标（省钱/多玩/兼顾）时，不重新查价：
