@@ -83,7 +83,13 @@ class TestStage3(unittest.TestCase):
         req = sample_req()
         cands = generate(req)[0]
         r = fetch(req, cands, FlyaiClient(self.tmp / "cache", replay=True))
-        self.assertTrue(any(w.startswith("苏州→三亚 在") for w in r["warnings"]))
+        # 「某日无航班数据」不应崩溃，应记为 warning 且候选标 no_data（用假客户端构造，避免依赖真实数据的偶发空值）
+        fake = FakeClient([(lambda a: a[0] == "search-flight" and a[2] == "苏州", None),
+                           (lambda a: a[0] == "search-flight", real("f_ow_out"))])
+        fake.max_calls, fake.live_calls = 99, 0
+        q = Quoter(req, fake, load_config("defaults"))
+        self.assertEqual(q._flights("苏州", "三亚", "2026-11-20"), [])
+        self.assertIn("2026-11-20", q.null_days[("苏州", "三亚")])
         reasons = {q["id"]: q["status"] for q in r["quotes"]}
         self.assertEqual(reasons["三亚|2026-11-20|3n|after_work|day_off"], "no_out", "苏州下班后赶不上 22 点前航班")
 
