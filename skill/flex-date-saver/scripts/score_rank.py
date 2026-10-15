@@ -121,7 +121,7 @@ def unavailable_hints(quotes, req, quotes_doc=None):
     if ps:
         hints.append(f"同类出发/返程方式连续两次无结果，已跳过其余 {ps} 个同类日期组合以节省查询")
     if nq:
-        hints.append(f"为控制查询量（单次 ≤20 次），另有 {nq} 个日期组合未查询；缩小时间窗口或固定晚数可覆盖更全")
+        hints.append(f"为控制查询量（单次 ≤40 次），另有 {nq} 个日期组合未查询；缩小时间窗口或固定晚数可覆盖更全")
     return hints
 
 
