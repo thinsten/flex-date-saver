@@ -69,9 +69,10 @@ def weekday_cn(day):
 
 
 class HolidayCalendar:
-    def __init__(self, cfg=None):
+    def __init__(self, cfg=None, custom_workdays=None):
         cfg = cfg or load_config("holidays")
         self.cfg = cfg
+        self.custom = {d(x) for x in (custom_workdays or [])}  # 用户把周末/假日改成上班（单休、调休）
         self.holidays = {}  # date -> (name, estimated)
         for h in cfg.get("holidays", []):
             for day in daterange(h["start"], h["end"]):
@@ -82,9 +83,13 @@ class HolidayCalendar:
         self.cov_start = d(cov["start"]) if cov.get("start") else None
         self.cov_end = d(cov["end"]) if cov.get("end") else None
 
+    @classmethod
+    def for_request(cls, req):
+        return cls(custom_workdays=(req or {}).get("custom_workdays"))
+
     def is_workday(self, day):
         day = d(day)
-        if day in self.makeup:
+        if day in self.custom or day in self.makeup:
             return True
         if day in self.holidays:
             return False
@@ -104,6 +109,8 @@ class HolidayCalendar:
 
     def label(self, day):
         day = d(day)
+        if day in self.custom:
+            return "上班（自定义）"
         if day in self.holidays:
             name, est = self.holidays[day]
             return f"{name}{'(预估)' if est else ''}"

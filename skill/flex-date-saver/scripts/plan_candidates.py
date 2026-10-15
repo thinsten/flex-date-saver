@@ -50,19 +50,26 @@ def _ret_options(day, cal, req, allowed):
 
 def generate(req, cal=None):
     """返回 (candidates, stats)。candidates 中时间均为 'YYYY-MM-DD HH:MM' 字符串。"""
-    cal = cal or HolidayCalendar()
+    cal = cal or HolidayCalendar.for_request(req)
     win_s, win_e = d(req["window"]["start"]), d(req["window"]["end"])
     n_min, n_max = req["nights"]["min"], req["nights"]["max"]
     allowed = {d(x) for x in req["leave"]["allowed_dates"]}
     max_days = req["leave"]["max_days"]
     origins = [{"city": req["home_city"], "kind": "home"}]
+    # 开车直达邻近城市机场（站点来自高德时，机场所在城市 ≠ 常住城市就作为单独的航班出发城市）
+    seen = {req["home_city"]} | set(req["transport"].get("nearby_cities") or [])
+    for s in req.get("stations") or []:
+        c = (s.get("city") or "").strip()
+        if s.get("type") == "air" and c and c not in seen:
+            seen.add(c)
+            origins.append({"city": c, "kind": "drive"})
     if req["transport"]["nearby_origin_ok"]:
         origins += [{"city": c, "kind": "nearby"} for c in req["transport"]["nearby_cities"]]
 
     cands, stats = [], {"enumerated": 0, "rejected_mid_leave": 0, "rejected_ret": 0, "rejected_leave_cap": 0}
     for dest in req["destinations"]:
         for out_day in daterange(win_s, win_e):
-            for n in range(n_min, n_max + 1):
+            for n in (req["nights"].get("options") or range(n_min, n_max + 1)):
                 ret_day = out_day + timedelta(days=n)
                 if ret_day > win_e:
                     continue

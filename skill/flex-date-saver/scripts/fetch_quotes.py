@@ -18,6 +18,7 @@ from datetime import timedelta
 
 from common import load_config, parse_dt, fmt_dt, read_json, write_json, d
 from flyai_client import FlyaiClient
+from amap_client import Amap, haversine_km, loc_of
 
 STAR_MAP = {"五星级": 5, "豪华型": 5, "四星级": 4, "高档型": 4, "三星级": 3, "舒适型": 3, "经济型": 2}
 
@@ -86,15 +87,30 @@ class Geo:
         self.req, self.cfg = req, cfg
         self.transfer = load_config("transfer_estimates")
 
+    @staticmethod
+    def _core(name, typ):
+        """站名核心词：机场去掉城市前缀和「国际/机场/航站楼」，如「上海虹桥国际机场」「虹桥」都→「虹桥」，「无锡硕放机场」「苏南硕放」→「硕放」。"""
+        n = re.sub(r"[（(].*?[)）]", "", name or "")
+        if typ == "air":
+            n = re.sub(r"国际|机场|航站楼|T\d", "", n)
+            n = re.sub(r"^(苏南|上海|北京|广州|深圳|杭州|南京|无锡|苏州|南通|嘉兴|宁波|成都|重庆|天津|西安|武汉|长沙|郑州|青岛|厦门|福州|合肥|济南|昆明|三亚|海口|大连|沈阳|哈尔滨|长春|石家庄|太原|南昌|南宁|贵阳|兰州|乌鲁木齐|呼和浩特|银川|西宁|拉萨|温州|常州|扬州|徐州|绍兴|台州|义乌|舟山|湖州|金华|衢州|丽水|盐城|淮安|连云港|泰州|镇江)", "", n)
+            return n
+        return n[:-1] if n.endswith("站") else n
+
     def commute(self, short, typ):
-        """返回 (分钟, 是否估算)。short 为接口车站/机场简称，如「虹桥」「苏州北」。"""
+        """返回 (分钟, 是否估算)。short 为接口车站/机场简称，如「虹桥」「苏南硕放」「苏州北」。"""
+        cs = self._core(short, typ)
         for s in self.req["stations"]:
             if s["type"] != typ:
                 continue
-            name = s["name"].replace("站", "").replace("机场", "").replace("国际", "")
-            if short and (short in s["name"] or name.endswith(short) or short in name):
+            cn = self._core(s["name"], typ)
+            if short and cs and cn and (cs == cn or (len(cs) >= 2 and len(cn) >= 2 and (cs in cn or cn in cs))):
                 return s["commute_min"], False
         return self.cfg["default_commute_min"][typ], True
+
+    def strict(self):
+        """站点列表来自高德（出发点 100km 内全部机场/车站）时，不在列表里的机场视为去不了，不再按默认通勤估算。"""
+        return self.req.get("stations_source") == "amap"
 
     def known_transfer(self, station, airport):
         for k, v in self.transfer["station_to_airport"].items():
@@ -127,10 +143,11 @@ def train_args(origin, dest, day, hour_start=None):
     return a
 
 
-def hotel_args(dest, ci, co, req, sort="price_asc"):
+def hotel_args(dest, ci, co, req, sort="price_asc", dest_name=None):
     h = req["hotel"]
     area = (h.get("area") or "").strip()
-    dest_name = f"{dest}{area}" if area and re.search(r"(区|县|市)$", area) else dest
+    if not dest_name:
+        dest_name = f"{dest}{area}" if area and re.search(r"(区|县|市)$", area) else dest
     a = ["search-hotel", "--dest-name", dest_name, "--check-in-date", str(ci), "--check-out-date", str(co),
          "--sort", sort]
     if h.get("mode") == "specific" and h.get("specific_name"):
@@ -167,6 +184,7 @@ def pareto(legs, key_price, key_time, limit=3):
 class Quoter:
     def __init__(self, req, client, cfg):
         self.req, self.c, self.cfg = req, client, cfg
+        self.amap = Amap(getattr(client, "cache_dir", None) or "/tmp")
         self.geo = Geo(req, cfg)
         self.tr = req["transport"]
         self.seats = set(self.tr.get("train_seat") or ["二等座"])
@@ -230,10 +248,13 @@ class Quoter:
         home, dest = self.req["home_city"], cand["dest"]
         air = [s["commute_min"] for s in self.req["stations"] if s["type"] == "air"] or [self.cfg["default_commute_min"]["air"]]
         tr = [s["commute_min"] for s in self.req["stations"] if s["type"] == "train"] or [self.cfg["default_commute_min"]["train"]]
-        hub = home if origin["kind"] == "home" else origin["city"]
+        hub = origin["city"]
+        flyer = origin["kind"] in ("home", "drive")
+        if origin["kind"] == "drive":
+            air = [s["commute_min"] for s in self.req["stations"] if s["type"] == "air" and s.get("city") == hub] or air
         leave_home = parse_dt(cand["out"]["leave_home_after"])
         deadline = parse_dt(cand["ret"]["arrive_home_by"])
-        if origin["kind"] == "home":
+        if flyer:
             out_min = leave_home + timedelta(minutes=min(air) + buf["air"])
         else:  # 最快：通勤 + 进站 + 20 分钟车程 + 20 分钟换乘 + 安检
             out_min = leave_home + timedelta(minutes=min(tr) + buf["train"] + 20 + 20 + buf["air"])
@@ -244,7 +265,7 @@ class Quoter:
                 if f["segments"][0]["dep"] >= out_min and (self.tr["redeye_out"] or not is_redeye(f, self.cfg))]
         if not outs:
             return "no_out"
-        slack = min(air) if origin["kind"] == "home" else 20 + buf["train"] + 20 + min(tr)
+        slack = min(air) if flyer else 20 + buf["train"] + 20 + min(tr)
         all_ret = self._flights(dest, hub, d(cand["ret_date"]))
         if not all_ret:
             return "no_data"
@@ -261,13 +282,15 @@ class Quoter:
         buf = self.cfg["buffer_min"]
         legs = []
         evening = leave_home.hour >= 12
-        if origin["kind"] == "home":
+        if origin["kind"] in ("home", "drive"):
             hs = (leave_home + timedelta(minutes=60 + buf["air"])).hour if evening else None
-            for f in self._flights(home, dest, day, hs):
+            for f in self._flights(origin["city"], dest, day, hs):
                 if not self.tr["redeye_out"] and is_redeye(f, self.cfg):
                     continue
                 ap = f["segments"][0]["from"]
                 cm, est = self.geo.commute(ap, "air")
+                if est and self.geo.strict():
+                    continue
                 if f["segments"][0]["dep"] < leave_home + timedelta(minutes=cm + buf["air"]):
                     continue
                 notes = ["通勤为估算"] if est else []
@@ -339,12 +362,14 @@ class Quoter:
         def arr_end(margin_min):
             t = deadline - timedelta(minutes=margin_min)
             return t.hour if t.date() == day and t.hour >= 6 else None
-        if origin["kind"] == "home":
-            for f in self._flights(dest, home, day, arr_hour_end=arr_end(min(s["commute_min"] for s in self.req["stations"] if s["type"] == "air") if any(s["type"] == "air" for s in self.req["stations"]) else self.cfg["default_commute_min"]["air"])):
+        if origin["kind"] in ("home", "drive"):
+            for f in self._flights(dest, origin["city"], day, arr_hour_end=arr_end(min(s["commute_min"] for s in self.req["stations"] if s["type"] == "air") if any(s["type"] == "air" for s in self.req["stations"]) else self.cfg["default_commute_min"]["air"])):
                 if not self.tr["redeye_back"] and is_redeye(f, self.cfg):
                     continue
                 ap = f["segments"][-1]["to"]
                 cm, est = self.geo.commute(ap, "air")
+                if est and self.geo.strict():
+                    continue
                 home_at = f["segments"][-1]["arr"] + timedelta(minutes=cm)
                 if home_at > deadline:
                     continue
@@ -401,15 +426,86 @@ class Quoter:
         return pareto(legs, lambda x: x["price"], lambda x: -x["dest_leave"].timestamp())
 
     # --- 酒店
-    def hotels(self, cand):
+    def _hotel_query(self, cand, ci, co, dest_name=None):
         h = self.req["hotel"]
-        out = self._hotel_filter(self._items(hotel_args(cand["dest"], cand["out_date"], cand["ret_date"], self.req)))
+        out = self._hotel_filter(self._items(hotel_args(cand["dest"], ci, co, self.req, dest_name=dest_name)))
         if not out and h.get("price_min") and h.get("mode") != "specific":
-            # 接口没有价格下限参数，按价格升序只回最便宜的约 10 家（北京常见十几二十元的旅舍），
+            # 接口没有价格下限参数，按价格升序只回最便宜的约 10 家（常是十几二十元的旅舍），
             # 设了下限时全被滤掉 → 改按价格降序再查一次（上限内最贵的一批），取其中满足下限的最便宜者
-            out = self._hotel_filter(self._items(hotel_args(cand["dest"], cand["out_date"], cand["ret_date"], self.req,
-                                                            sort="price_desc")))
-        return self._hotel_area(out, cand)
+            out = self._hotel_filter(self._items(hotel_args(cand["dest"], ci, co, self.req, sort="price_desc",
+                                                            dest_name=dest_name)))
+        return out
+
+    def _warn(self, msg):
+        if msg not in self.warnings:
+            self.warnings.append(msg)
+
+    def hotels(self, cand, arrival=None):
+        """只安排第一晚（到达当天入住、住 1 晚）。位置筛选（hotel.location.mode）：
+        station = 离到达机场开车 ≤ max_drive_min 分钟；point = 离指定地点 ≤ max_km 公里；none = 不限。
+        返回按「满足位置条件的最便宜 → 其余按远近」排序的列表；位置筛选需要 AMAP_KEY，没有就退化为全城最便宜并提示。"""
+        h = self.req["hotel"]
+        ci = d(cand["out_date"])
+        co = ci + timedelta(days=1)
+        loc = h.get("location") or {}
+        mode = loc.get("mode") or "none"
+        if h.get("mode") == "specific":
+            mode = "none"
+        if mode != "none" and not self.amap.ok:
+            self._warn("未配置高德 Key，第一晚酒店没有做位置筛选")
+            mode = "none"
+        ref, ref_name, dest_name = None, "", None
+        if mode == "station":
+            if not arrival:
+                mode = "none"
+            else:
+                ref_name = arrival.get("to_full") or arrival.get("to") or ""
+                pl = self.amap.place(ref_name, cand["dest"])
+                if pl:
+                    ref, dest_name = pl["location"], f"{pl['city']}{pl['district']}"
+                else:
+                    self._warn(f"高德没找到「{ref_name}」的位置，第一晚酒店按全城筛选")
+                    mode = "none"
+        elif mode == "point":
+            pt = loc.get("point") or {}
+            rg = self.amap.regeo(pt.get("location")) if pt.get("location") else None
+            if not rg:
+                mode = "none"
+            elif re.sub(r"(市|地区|自治州|盟)$", "", rg["city"]) != cand["dest"]:
+                self._warn(f"指定的地点「{pt.get('name')}」不在{cand['dest']}，{cand['dest']}的酒店未做位置筛选")
+                mode = "none"
+            else:
+                ref, ref_name, dest_name = pt["location"], pt.get("name") or "指定地点", f"{rg['city']}{rg['district']}"
+        out = self._hotel_query(cand, ci, co, dest_name)
+        if mode == "none":
+            return self._hotel_area(out, cand)
+        if not out:  # 所在区县没有符合条件的酒店 → 退到全城
+            out = self._hotel_query(cand, ci, co)
+        for x in out:
+            x["dist_km"] = round(haversine_km(loc_of(ref), (float(x["lng"]), float(x["lat"]))), 1) if x.get("lng") else None
+            x["ref"] = ref_name
+        if mode == "station":
+            lim = int(loc.get("max_drive_min") or 30)
+            pool = sorted([x for x in out if x["dist_km"] is not None], key=lambda x: (x["dist_km"] > lim * 1.2, x["price_per_night"]))
+            for x in pool[:6]:  # 只对最有希望的几家算开车时间，控制高德调用
+                x["drive_min"] = self.amap.drive_min(ref, f"{x['lng']},{x['lat']}")
+            ok = sorted([x for x in pool if x.get("drive_min") is not None and x["drive_min"] <= lim],
+                        key=lambda x: (x["price_per_night"], x["drive_min"]))
+            rest = sorted([x for x in pool if x not in ok], key=lambda x: (x.get("drive_min") or 999, x["dist_km"]))
+            for x in rest:
+                x["too_far"] = True
+            if not ok and rest:
+                self._warn(f"{cand['dest']}：到达站点开车 {lim} 分钟内没有符合条件的酒店，已推荐最近的")
+            return ok + rest
+        lim = float(loc.get("max_km") or 5)
+        pool = [x for x in out if x["dist_km"] is not None]
+        ok = sorted([x for x in pool if x["dist_km"] <= lim], key=lambda x: (x["price_per_night"], x["dist_km"]))
+        rest = sorted([x for x in pool if x not in ok], key=lambda x: x["dist_km"])
+        for x in rest:
+            x["too_far"] = True
+        if not ok and rest:
+            self._warn(f"{cand['dest']}：「{ref_name}」{lim:g} 公里内没有符合条件的酒店，已推荐最近的")
+        return ok + rest
 
     def _hotel_filter(self, items):
         h = self.req["hotel"]
@@ -437,7 +533,8 @@ class Quoter:
                     continue
             out.append({"shId": it.get("shId"), "name": name, "star": (it.get("star") or "").strip(),
                         "price_per_night": p, "address": it.get("address"), "near": it.get("interestsPoi"),
-                        "pic": it.get("mainPic"), "url": it.get("detailUrl")})
+                        "pic": it.get("mainPic"), "url": it.get("detailUrl"),
+                        "lng": it.get("longitude"), "lat": it.get("latitude")})
         return out
 
     def _hotel_area(self, out, cand):
@@ -559,7 +656,14 @@ def fetch(req, cands, client):
                 opts.append({"origin": o, "out": [_leg_out(x) for x in outs], "ret": [_leg_ret(x) for x in rets]})
             else:
                 pre[-1] = "no_out" if not outs else "no_ret"
-        hotels = q.hotels(c) if opts else []
+        by_arr = {}
+        for op in opts:  # 第一晚酒店按每个到达机场分别挑（同城可能落不同机场）
+            for leg in op["out"]:
+                seg = leg["flight"]["segments"][-1]
+                key = seg.get("to_full") or seg.get("to")
+                if key not in by_arr:
+                    by_arr[key] = q.hotels(c, seg)
+        hotels = next((v for v in by_arr.values() if v), [])
         if opts:
             status = "ok" if hotels else "no_hotel"
         else:
@@ -571,7 +675,7 @@ def fetch(req, cands, client):
         if status == "no_ret":
             fails[pat_ret] = fails.get(pat_ret, 0) + 1
         results.append({**c, "status": status, "options": opts, "hotel": hotels[0] if hotels else None,
-                        "hotel_alts": hotels[1:3]})
+                        "hotel_alts": hotels[1:3], "hotels_by_arrival": {k: v[:3] for k, v in by_arr.items()}})
     info["selected"] = len(results)
     info["truncated"] = bool(not_queried or pattern_skipped)
     info["pattern_skipped"] = len(pattern_skipped)

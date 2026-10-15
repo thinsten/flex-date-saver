@@ -70,12 +70,15 @@ class TestRank(unittest.TestCase):
         q = quote("2026-11-20", 3, "2026-11-23",
                   [leg("R1", "2026-11-20 23:30", "2026-11-21 02:30", 500, "dest_arrive", "2026-11-21 02:30", ["红眼"])],
                   [leg("B1", "2026-11-23 20:00", "2026-11-23 23:00", 400, "dest_leave", "2026-11-23 18:00")])
+        # 只安排第一晚：特种兵凌晨落地 → 第一晚不订（0 晚）；否则 1 晚
         p = rank(req(goal={"special_forces": True}), {"quotes": [q]})["plans"][0]
-        self.assertEqual(p["hotel_nights"], 2)
-        self.assertEqual(p["price"]["total"], (500 + 400) * 2 + 300 * 2)
+        self.assertEqual(p["hotel_nights"], 0)
+        self.assertEqual(p["price"]["total"], (500 + 400) * 2)
         self.assertTrue(any("不订酒店" in f for f in p["flags"]))
         p2 = rank(req(goal={"special_forces": False}), {"quotes": [q]})["plans"][0]
-        self.assertEqual(p2["hotel_nights"], 3)
+        self.assertEqual(p2["hotel_nights"], 1)
+        self.assertEqual(p2["price"]["total"], (500 + 400) * 2 + 300)
+        self.assertTrue(any("其余 2 晚未计入" in f for f in p2["flags"]))
 
     def _three(self):
         # A：最便宜但玩得少；B：最贵玩得最多；C：中间
@@ -124,6 +127,25 @@ class TestRank(unittest.TestCase):
         doc = self._three()
         plans = rank(req(goal={"budget_total": 3000}), doc, "play")["plans"]
         self.assertTrue(all(p["price"]["total"] <= 3000 for p in plans))
+
+
+class TestCalendarAndNights(unittest.TestCase):
+    def test_9_single_rest_saturday_workday(self):
+        from plan_candidates import generate
+        # 11-21 周六改为上班：周五晚出发→周日回 时周六成了中间工作日，必须可请假
+        r = req(window={"start": "2026-11-16", "end": "2026-11-30"}, nights={"options": [2]},
+                custom_workdays=["2026-11-21"], leave={"allowed_dates": [], "max_days": 0})
+        ids = {c["id"] for c in generate(r)[0]}
+        self.assertNotIn("三亚|2026-11-20|2n|after_work|free_day", ids)
+        r2 = req(window={"start": "2026-11-16", "end": "2026-11-30"}, nights={"options": [2]},
+                 custom_workdays=["2026-11-21"], leave={"allowed_dates": ["2026-11-21"], "max_days": 1})
+        self.assertIn("三亚|2026-11-20|2n|after_work|free_day", {c["id"] for c in generate(r2)[0]})
+
+    def test_10_nights_options(self):
+        from plan_candidates import generate
+        r = req(nights={"options": [1, 3]}, leave={"allowed_dates": [], "max_days": 0})
+        self.assertEqual(r["nights"], {"min": 1, "max": 3, "options": [1, 3]})
+        self.assertEqual({c["nights"] for c in generate(r)[0]} - {1, 3}, set())
 
 
 class TestReplayConsistency(unittest.TestCase):

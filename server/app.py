@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """flex-date-saver 网页服务（Python 3.8+ 标准库，无第三方依赖）。
 
-- 访问控制：统一访问密码（环境变量 FDS_PASSWORD），登录后发 HttpOnly 会话 cookie
+- 访问控制：免登录；每个浏览器发一个匿名 fds_uid cookie 隔离历史；每日总量 + 单 IP 上限防滥用
 - 一句话填表：调百炼兼容接口（FDS_LLM_MODEL，默认 qwen-flash）把自然语言转成需求单草稿，前端回填表单由用户确认
 - 规划：单线程队列逐个执行 skill 的 run_plan.py（保证飞猪 QPS ≤2），结果存 data/jobs/<id>/
 - 切换目标：直接用已存的 quotes.json 重排，不重新查价
 - 历史与分享：最近规划列表；分享链接 /share/<id>?k=<签名> 免登录只读
 
 环境变量（放 /etc/flex-date-saver.env，不进 git）：
-  FDS_PASSWORD  FDS_SECRET  FLYAI_API_KEY  DASHSCOPE_API_KEY  DASHSCOPE_BASE_URL
+  FDS_SECRET  FLYAI_API_KEY  AMAP_KEY  DASHSCOPE_API_KEY  DASHSCOPE_BASE_URL
   可选：FDS_PORT(8092) FDS_HOST(127.0.0.1) FDS_DATA_DIR FLYAI_BIN FDS_LLM_MODEL FDS_DAILY_PLAN_LIMIT(80) FDS_DAILY_PARSE_LIMIT(300)
 """
 import hashlib
@@ -58,7 +58,9 @@ JOBS.mkdir(parents=True, exist_ok=True)
 jobs_lock = threading.Lock()
 job_queue = queue.Queue()
 running = {"id": None, "since": None}
-counters = {"day": "", "plan": 0, "parse": 0}
+counters = {"day": "", "plan": 0, "parse": 0, "ip": {}}
+IP_PLAN = int(os.environ.get("FDS_IP_PLAN_LIMIT", "15"))
+IP_PARSE = int(os.environ.get("FDS_IP_PARSE_LIMIT", "50"))
 fail_login = {}  # ip -> [timestamps]
 
 
@@ -88,16 +90,22 @@ def share_key(job_id):
     return sign("share." + job_id)[:16]
 
 
-def bump(kind):
+def bump(kind, ip=""):
+    """返回 None 表示放行；否则返回提示文案。"""
     today = str(date.today())
     with jobs_lock:
         if counters["day"] != today:
-            counters.update(day=today, plan=0, parse=0)
-        limit = DAILY_PLAN if kind == "plan" else DAILY_PARSE
-        if counters[kind] >= limit:
-            return False
+            counters.update(day=today, plan=0, parse=0, ip={})
+        total = DAILY_PLAN if kind == "plan" else DAILY_PARSE
+        per_ip = IP_PLAN if kind == "plan" else IP_PARSE
+        k = f"{kind}|{ip}"
+        if counters[kind] >= total:
+            return "今天的使用次数已经用完了，明天再来"
+        if counters["ip"].get(k, 0) >= per_ip:
+            return f"你今天已经{'规划' if kind == 'plan' else '用 AI 填表'} {per_ip} 次了，明天再来"
         counters[kind] += 1
-        return True
+        counters["ip"][k] = counters["ip"].get(k, 0) + 1
+        return None
 
 
 def read_json(p, default=None):
@@ -200,8 +208,9 @@ LLM_SYSTEM = """你把用户的出行需求转成「规划需求单」JSON。今
 最重要的规则：只输出用户明确说了的字段，没提到的字段和子字段一律不要输出（表单会用默认值）。例如用户没说上班时间就不要输出 start_time，没说中转就不要输出 transfer_ok，没说房间数就不要输出 rooms。宁可少填，不要猜。字段：
 - home_city: 常住/出发城市（字符串）
 - destinations: 目的地数组，最多 2 个
-- window: {{"start":"YYYY-MM-DD","end":"YYYY-MM-DD"}} 出行时间窗口。「12月」=当年或下一个 12 月整月；「下个月」按今天推算；窗口开始不能早于明天
-- nights: {{"min":整数,"max":整数}} 玩几晚；「3天2晚」=2晚；「玩3天」=2晚；「两三晚」=min2 max3
+- window: {{"start":"最早出发日期 YYYY-MM-DD","end":"最晚回到家日期 YYYY-MM-DD"}}。「12月」=start 12-01、end 12-31；「下个月」按今天推算；start 不能早于明天
+- nights: {{"options":[整数,...]}} 可接受玩几晚（可多个）；「3天2晚」=[2]；「玩3天」=[2]；「两三晚」=[2,3]；「周末」=[1,2]
+- custom_workday_weekdays: ["周六"] 用户周末要上班时填（「单休」「周六上班」=["周六"]；「周日上班」=["周日"]）
 - travelers: {{"adults":整数,"children":整数}}；「我和女朋友」=2 成人；「一家三口」=2 成人 1 儿童
 - rooms: 整数
 - work: {{"off_time":"HH:MM","start_time":"HH:MM"}} 下班/上班时间
@@ -209,7 +218,7 @@ LLM_SYSTEM = """你把用户的出行需求转成「规划需求单」JSON。今
 - leave: {{"max_days":整数,"weekdays":["周五","周一"],"dates":["YYYY-MM-DD"]}}；「最多请1天假」=max_days 1；用户说「周五/周一可以请假」填 weekdays；说了具体日期填 dates；只说天数没说哪天时 weekdays 填 ["周一","周二","周三","周四","周五"]；完全没提请假就不输出 leave
 - return_home_by: "HH:MM" 返程最晚到家
 - transport: {{"redeye_out":bool,"redeye_back":bool,"transfer_ok":bool,"max_layover_min":整数,"nearby_origin_ok":bool,"nearby_cities":[城市],"max_train_min":整数,"cabin":"经济舱|公务舱|头等舱","train_seat":["二等座"]}}
-- hotel: {{"mode":"filter|specific","stars":[1-5],"types":["酒店|民宿|客栈"],"chain":"any|chain_only|brand:品牌名","area":"","price_min":数或null,"price_max":数或null,"specific_name":null}}；「五星」=stars[5]；「四五星」=[4,5]；「住全季」=chain "brand:全季"
+- hotel: {{"mode":"filter|specific","stars":[1-5],"types":["酒店|民宿|客栈"],"chain":"any|chain_only|brand:品牌名","price_min":数或null,"price_max":数或null,"specific_name":null,"location":{{"mode":"none|station|point","max_drive_min":整数,"max_km":数,"point_name":"地点名"}}}}；「五星」=stars[5]；「四五星」=[4,5]；「住全季」=chain "brand:全季"；只安排第一晚住宿：「住机场附近/落地后别太远」=location mode station；「住XX景区附近/离XX近」=mode point + point_name；没提位置就不输出 location
 - goal: {{"priority":"save|play|balance","special_forces":bool,"budget_total":数或null}}；「最省钱」=save；「多玩几天/玩得多」=play；「特种兵」=special_forces true
 另外输出 "_notes": 字符串数组，写你做的推断或用户说得含糊的地方（例如「“12月”按 2026-12-01~12-31 理解」），没有就空数组。"""
 
@@ -242,10 +251,185 @@ def llm_parse(text):
         if want and w.get("start") and w.get("end"):
             days |= {str(d) for d in daterange(w["start"], w["end"]) if d.weekday() in want and cal.is_workday(d)}
         obj["leave"] = {"allowed_dates": sorted(days), "max_days": lv.get("max_days", len(days))}
+    wk = obj.pop("custom_workday_weekdays", None)
+    w = obj.get("window") or {}
+    if wk and w.get("start") and w.get("end"):  # 单休：窗口内对应星期几都改成上班
+        from common import daterange
+        idx = {"周六": 5, "周日": 6}
+        obj["custom_workdays"] = [str(x) for x in daterange(w["start"], w["end"]) if x.weekday() in {idx[k] for k in wk if k in idx}]
+    hl = (obj.get("hotel") or {}).get("location")
+    if isinstance(hl, dict) and hl.get("mode") == "point" and hl.get("point_name"):
+        dest = (obj.get("destinations") or [""])[0]
+        tip = next(iter(geo_tips(hl["point_name"], dest) if AMAP_KEY else []), None)
+        hl["point"] = {"name": tip["name"], "location": tip["location"]} if tip else None
+        if not tip:
+            hl["mode"] = "none"
+            notes.append(f"没找到「{hl['point_name']}」的位置，第一晚住宿先不限位置")
     for st in obj.get("stations") or []:  # 「机场」泛指 → 交给前端匹配常住城市的第一个机场
         if st.get("name") in ("机场", "火车站", "高铁站"):
             st["generic"] = st.get("type") or ("air" if st["name"] == "机场" else "train")
     return obj, notes
+
+
+# ------------------------------------------------------------------ 高德：出发点、周边 100km 机场/火车站、开车时间
+AMAP_KEY = os.environ.get("AMAP_KEY", "")
+_amap_cache, _amap_lock = {}, threading.Lock()
+BAD_AIR = re.compile(r"航站楼|卫星厅|建设中|暂停|通用|直升|水上|货运|[（(]")
+BAD_TRAIN = re.compile(r"建设中|暂停|货运|[（(]")
+
+
+def amap(path, **params):
+    if not AMAP_KEY:
+        raise RuntimeError("服务器未配置高德 Key")
+    q = "&".join(f"{k}={urllib.request.quote(str(v), safe=',|')}" for k, v in sorted(params.items()))
+    key = f"{path}?{q}"
+    with _amap_lock:
+        hit = _amap_cache.get(key)
+        if hit and time.time() - hit[0] < 86400:
+            return hit[1]
+    for attempt in range(4):
+        _amap_pace()
+        with urllib.request.urlopen(f"https://restapi.amap.com{path}?{q}&key={AMAP_KEY}", timeout=12) as r:
+            d = json.loads(r.read().decode())
+        if "QPS" in str(d.get("info")) and attempt < 3:  # 个人 Key 并发上限低，超了就等一下重试
+            time.sleep(1.0 + attempt)
+            continue
+        break
+    if str(d.get("status")) != "1":
+        raise RuntimeError(f"高德接口报错：{d.get('info')}")
+    with _amap_lock:
+        _amap_cache[key] = (time.time(), d)
+        if len(_amap_cache) > 3000:
+            for k in sorted(_amap_cache, key=lambda k: _amap_cache[k][0])[:1000]:
+                _amap_cache.pop(k, None)
+    return d
+
+
+_pace = {"t": 0.0}
+_pace_lock = threading.Lock()
+
+
+def _amap_pace(gap=0.35):
+    """全局节流：两次高德请求至少间隔 gap 秒（个人 Key 约 3 QPS）"""
+    with _pace_lock:
+        wait = _pace["t"] + gap - time.time()
+        if wait > 0:
+            time.sleep(wait)
+        _pace["t"] = time.time()
+
+
+def _city(name):
+    return re.sub(r"(市|地区|自治州|盟)$", "", name or "")
+
+
+def haversine_km(a, b):
+    import math
+    (lng1, lat1), (lng2, lat2) = a, b
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dl, dp = math.radians(lng2 - lng1), p2 - p1
+    h = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+    return 6371 * 2 * math.asin(math.sqrt(h))
+
+
+def loc_of(s):
+    lng, lat = s.split(",")
+    return float(lng), float(lat)
+
+
+def geo_tips(q, city=""):
+    d = amap("/v3/assistant/inputtips", keywords=q[:40], city=city, datatype="poi")
+    out = []
+    for t in d.get("tips") or []:
+        if isinstance(t.get("location"), str) and t["location"]:
+            out.append({"name": t.get("name"), "district": t.get("district") if isinstance(t.get("district"), str) else "",
+                        "location": t["location"]})
+    return out[:10]
+
+
+def geo_city(name):
+    d = amap("/v3/geocode/geo", address=name)
+    g = (d.get("geocodes") or [{}])[0]
+    if not g.get("location"):
+        return None
+    c = g.get("city") if isinstance(g.get("city"), str) and g.get("city") else g.get("province")
+    return {"location": g["location"], "city": _city(c), "address": g.get("formatted_address")}
+
+
+def geo_ip(ip):
+    params = {} if re.match(r"^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)", ip or "127.") else {"ip": ip}
+    d = amap("/v3/ip", **params)
+    c = d.get("city") if isinstance(d.get("city"), str) else ""
+    return _city(c)
+
+
+def _poly(lng, lat, km):
+    import math
+    dlat, dlng = km / 111.0, km / (111.0 * math.cos(math.radians(lat)))
+    a, b, c, e = lng - dlng, lat - dlat, lng + dlng, lat + dlat
+    return f"{a:.4f},{b:.4f}|{c:.4f},{b:.4f}|{c:.4f},{e:.4f}|{a:.4f},{e:.4f}|{a:.4f},{b:.4f}"
+
+
+def _search(poly, types, keywords, pages):
+    out = []
+    for pn in range(1, pages + 1):
+        kw = {"keywords": keywords} if keywords else {}
+        d = amap("/v5/place/polygon", polygon=poly, types=types, page_size=25, page_num=pn, **kw)
+        pois = d.get("pois") or []
+        out += pois
+        if len(pois) < 25:
+            break
+    return out
+
+
+def drive_min(origin, dest):
+    try:
+        d = amap("/v5/direction/driving", origin=origin, destination=dest, show_fields="cost", strategy=32)
+        p = ((d.get("route") or {}).get("paths") or [{}])[0]
+        sec = int((p.get("cost") or {}).get("duration") or 0)
+        return max(5, round(sec / 60)) if sec else None
+    except Exception:
+        return None
+
+
+def geo_stations(location, radius_km=100, trains_shown=5):
+    from concurrent.futures import ThreadPoolExecutor
+    o = loc_of(location)
+    rg = amap("/v3/geocode/regeo", location=location)
+    ac = (rg.get("regeocode") or {}).get("addressComponent") or {}
+    city = _city(ac.get("city") if isinstance(ac.get("city"), str) and ac.get("city") else ac.get("province"))
+    address = (rg.get("regeocode") or {}).get("formatted_address")
+    poly = _poly(o[0], o[1], radius_km)
+    cand = []
+    for p in _search(poly, "150104", "", 2):
+        if "机场" in p["name"] and not BAD_AIR.search(p["name"]):
+            cand.append(("air", p))
+    for p in _search(poly, "150200", "火车站", 3):
+        if p["name"].endswith("站") and not BAD_TRAIN.search(p["name"]):
+            cand.append(("train", p))
+    seen, items = set(), []
+    for typ, p in cand:
+        if p["name"] in seen or not p.get("location"):
+            continue
+        seen.add(p["name"])
+        dist = haversine_km(o, loc_of(p["location"]))
+        if dist <= radius_km:
+            items.append({"name": p["name"], "type": typ, "city": _city(p.get("cityname")), "dist_km": round(dist, 1),
+                          "location": p["location"]})
+    # 只给机场和直线最近的 8 个火车站算真实开车时间，其余按距离估算（这些默认折叠，省高德调用）
+    trains_near = sorted([i for i in items if i["type"] == "train"], key=lambda i: i["dist_km"])[:8]
+    need = [i for i in items if i["type"] == "air"] + trains_near
+    with ThreadPoolExecutor(2) as ex:
+        mins = list(ex.map(lambda it: drive_min(location, it["location"]), need))
+    got = {id(it): m for it, m in zip(need, mins)}
+    for it in items:
+        m = got.get(id(it))
+        it["commute_min"] = m if m is not None else round(it["dist_km"] * 1.5 + 10)
+        it["estimated"] = m is None
+    air = sorted([i for i in items if i["type"] == "air"], key=lambda i: i["commute_min"])
+    train = sorted([i for i in items if i["type"] == "train"], key=lambda i: i["commute_min"])
+    for i, t in enumerate(train):
+        t["folded"] = i >= trains_shown
+    return {"city": city, "address": address, "location": location, "stations": air + train}
 
 
 # ------------------------------------------------------------------ HTTP
@@ -279,11 +463,18 @@ class H(BaseHTTPRequestHandler):
                 or self.client_address[0])
 
     def authed(self):
+        return True  # 已取消访问密码，谁都能用；靠每日总量 + 单 IP 上限防滥用
+
+    def uid(self):
         for part in (self.headers.get("Cookie") or "").split(";"):
             k, _, v = part.strip().partition("=")
-            if k == "fds_session" and check_session(v):
-                return True
-        return False
+            if k == "fds_uid" and re.match(r"^[a-f0-9]{16}\.[a-f0-9]{12}$", v) and hmac.compare_digest(v.split(".")[1], sign("u." + v.split(".")[0])[:12]):
+                return v.split(".")[0]
+        return None
+
+    def new_uid_cookie(self):
+        u = secrets.token_hex(8)
+        return u, f"fds_uid={u}.{sign('u.' + u)[:12]}; HttpOnly; SameSite=Lax; Path=/; Max-Age={400 * 86400}"
 
     def body(self):
         n = int(self.headers.get("Content-Length") or 0)
@@ -293,7 +484,10 @@ class H(BaseHTTPRequestHandler):
 
     def page(self, inject):
         html = WEB.read_text(encoding="utf-8").replace("<!--FDS_SERVER-->", f"<script>{inject}</script>", 1)
-        self.send(200, body=html.encode(), ctype="text/html; charset=utf-8")
+        headers = {}
+        if not self.uid():
+            headers["Set-Cookie"] = self.new_uid_cookie()[1]
+        self.send(200, body=html.encode(), ctype="text/html; charset=utf-8", headers=headers)
 
     # --- 路由
     def do_GET(self):
@@ -321,18 +515,33 @@ class H(BaseHTTPRequestHandler):
                 return self.ok(authed=self.authed())
             if not self.authed():
                 return self.err(401, "need_login")
+            if path.startswith("/api/geo/"):
+                if path == "/api/geo/ip":
+                    return self.ok(city=geo_ip(self.ip()))
+                if path == "/api/geo/tips":
+                    return self.ok(tips=geo_tips((qs.get("q") or [""])[0], (qs.get("city") or [""])[0]))
+                if path == "/api/geo/city":
+                    r = geo_city((qs.get("name") or [""])[0])
+                    return self.ok(**(r or {})) if r else self.err(404, "not_found", message="没找到这个城市")
+                if path == "/api/geo/stations":
+                    loc = (qs.get("loc") or [""])[0]
+                    if not re.match(r"^-?\d+(\.\d+)?,-?\d+(\.\d+)?$", loc):
+                        return self.err(400, "bad_location")
+                    return self.ok(**geo_stations(loc))
             if path == "/api/history":
-                items = []
-                for d in sorted(JOBS.iterdir(), reverse=True)[:40]:
+                items, me = [], self.uid()
+                for d in sorted(JOBS.iterdir(), reverse=True)[:400]:
                     m = read_json(d / "meta.json", {})
-                    if m:
+                    if m and me and m.get("uid") == me and len(items) < 40:
                         items.append({"id": d.name, "title": m.get("title"), "status": m.get("status"),
                                       "brief": m.get("brief"), "created_at": m.get("created_at")})
                 return self.ok(items=items)
             m = re.match(r"^/api/job/([0-9a-f-]+)$", path)
-            if m and JOB_ID.match(m.group(1)) and job_dir(m.group(1)).exists():
+            if m and JOB_ID.match(m.group(1)) and job_dir(m.group(1)).exists() and self.owns(m.group(1)):
                 return self.ok(**self.job_payload(m.group(1)))
             return self.err(404, "not_found")
+        except RuntimeError as e:
+            return self.err(502, "upstream", message=str(e))
         except Exception:
             log("GET error", path, traceback.format_exc())
             return self.err(500, "server_error")
@@ -361,8 +570,9 @@ class H(BaseHTTPRequestHandler):
                 text = str(b.get("text", "")).strip()
                 if not text:
                     return self.err(400, "empty", message="先说说你的需求")
-                if not bump("parse"):
-                    return self.err(429, "daily_limit", message="今天的 AI 填表次数用完了，请直接填表")
+                why = bump("parse", self.ip())
+                if why:
+                    return self.err(429, "daily_limit", message=why + "（可以直接填表）")
                 obj, notes = llm_parse(text)
                 return self.ok(request=obj, notes=notes)
             if path == "/api/plan":
@@ -370,17 +580,18 @@ class H(BaseHTTPRequestHandler):
                 v = validate(req)
                 if not v["ok"]:
                     return self.err(400, "invalid", missing=v["missing"], conflicts=v["conflicts"], warnings=v["warnings"])
-                if not bump("plan"):
-                    return self.err(429, "daily_limit", message=f"今天的规划次数（{DAILY_PLAN}）用完了，明天再来")
+                why = bump("plan", self.ip())
+                if why:
+                    return self.err(429, "daily_limit", message=why)
                 jid = datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + secrets.token_hex(3)
                 d = job_dir(jid)
                 d.mkdir(parents=True)
                 write_json(d / "request.json", req)
-                set_meta(jid, status="queued", created_at=time.time(), title=title_of(v["request"]), ip=self.ip())
+                set_meta(jid, status="queued", created_at=time.time(), title=title_of(v["request"]), ip=self.ip(), uid=self.uid())
                 job_queue.put(jid)
                 return self.ok(id=jid, position=queue_position(jid), warnings=v["warnings"], applied=v["applied"])
             m = re.match(r"^/api/job/([0-9a-f-]+)/goal$", path)
-            if m and JOB_ID.match(m.group(1)):
+            if m and JOB_ID.match(m.group(1)) and job_dir(m.group(1)).exists() and self.owns(m.group(1)):
                 jid, goal = m.group(1), b.get("goal")
                 d = job_dir(jid)
                 if goal not in ("save", "play", "balance"):
@@ -405,6 +616,10 @@ class H(BaseHTTPRequestHandler):
             log("POST error", path, traceback.format_exc())
             return self.err(500, "server_error")
 
+    def owns(self, jid):
+        owner = job_meta(jid).get("uid")
+        return owner is None or owner == self.uid()
+
     def job_payload(self, jid, with_request=True):
         d = job_dir(jid)
         m = job_meta(jid)
@@ -422,8 +637,6 @@ class H(BaseHTTPRequestHandler):
 
 
 def main():
-    if not PASSWORD:
-        log("警告：未设置 FDS_PASSWORD，所有人都无法登录")
     recover_jobs()
     threading.Thread(target=worker, daemon=True).start()
     host, port = os.environ.get("FDS_HOST", "127.0.0.1"), int(os.environ.get("FDS_PORT", "8092"))

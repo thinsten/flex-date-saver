@@ -8,7 +8,7 @@
 
 | 形态 | 入口 | 说明 |
 |---|---|---|
-| 自部署网页（主用） | http://47.102.103.226:8088/ | 一句话 AI 填表 → 确认表单 → 开始规划 → 结果页；统一访问密码，可生成免密分享链接 |
+| 自部署网页（主用） | http://47.102.103.226:8088/ | 一句话 AI 填表 → 确认表单 → 开始规划 → 结果页；免登录，历史按浏览器隔离，可生成分享链接 |
 | 百炼 Managed Agent | 智能体 `agent_01M4YWBRFG6Y0CRW8F8E5RN2YG` | 大赛作品形态，`tools/deploy_bailian.py` 部署 |
 | 千问办公 Skill | `flex-date-saver.skill` | 本机对话调用，需全局 flyai-cli 1.0.16 |
 | 静态表单（GitHub Pages） | https://thinsten.github.io/flex-date-saver/web/ | 只生成需求单文本，复制给智能体 |
@@ -41,7 +41,11 @@ data/                           ← 网页运行时数据。⚠️ 永不进 git
 
 ## 3. 网页后端设计
 
-- **访问控制**：统一密码 `FDS_PASSWORD`，登录发 HttpOnly cookie（30 天，HMAC 签名，密钥 `FDS_SECRET`）；同 IP 15 分钟内错 8 次锁定。
+- **访问控制**：免登录（2026-10-15 用户要求去掉密码）。页面首次打开发一个 HttpOnly 匿名 cookie `fds_uid`（HMAC 签名，密钥 `FDS_SECRET`），任务 meta 记 uid：历史只列自己的，查看/切换目标要求是本人（分享链接除外）。防滥用靠每日总量 + 单 IP 上限（`FDS_IP_PLAN_LIMIT` 15、`FDS_IP_PARSE_LIMIT` 50）。
+- **出发地与站点（高德）**：`/api/geo/ip`（IP→默认城市）、`/api/geo/tips`（地址联想）、`/api/geo/city`（城市→市中心坐标）、`/api/geo/stations`（出发点 100km 内机场+火车站，多边形搜索；去掉航站楼/通用/直升/建设中；只给机场和直线最近 8 个火车站算真实开车时间，其余按距离估算并折叠）。高德个人 Key 约 3 QPS：全局 0.35s 节流 + CUQPS 重试，结果内存缓存 1 天。前端用 geoSeq 只认最后一次请求的结果（IP/城市/地址会先后返回）。
+- **开车直达邻近城市机场**：需求单 `stations_source=amap` 时，站点里机场所在城市 ≠ 出发城市的，自动作为 kind=drive 的航班出发城市；且不在站点列表里的机场一律不用（严格模式）。站名匹配用 `Geo._core`（「上海虹桥国际机场」「虹桥」→「虹桥」，「无锡硕放机场」「苏南硕放」→「硕放」）。
+- **住宿只安排第一晚**：酒店按到达当晚查 1 晚；总价 = 交通 × 人数 + 第一晚 × 间数，其余晚数不计入（结果标注）。位置筛选 `hotel.location`：station（默认，离到达机场开车 ≤30 分钟：高德定位机场 → 查所在区县的酒店 → 直线粗筛 → 前 6 家算开车时间）、point（离指定地点 ≤N 公里）、none。没有满足的推荐最近的并打 too_far 标签。第一晚按每个到达机场分别挑（`hotels_by_arrival`）。没有 AMAP_KEY（百炼/本机 Skill）时自动退化为不限位置并提示。
+- **日历**：`custom_workdays` 是用户把周末/假日改成上班（单休、调休），`HolidayCalendar.for_request(req)` 统一处理；`nights.options` 支持多选晚数。
 - **一句话填表**：`/api/parse` 调百炼兼容接口（`FDS_LLM_MODEL`，默认 qwen3.7-plus；qwen-flash 实测会编造字段，别换回去），只输出用户说了的字段。「周五可以请假」这类由模型输出 weekdays，**后端展开成窗口内具体工作日**（不让模型数日历）。结果回填表单，用户确认后才规划——模型从不接触价格。
 - **规划**：`/api/plan` 先 validate，不通过直接返回缺项/冲突；通过后入**单线程队列**，worker 逐个跑 run_plan.py（保证飞猪 QPS ≤2）。结果在 `data/jobs/<id>/`（request.json / plan.json / work/ / run.log / meta.json）。
 - **切换目标**：`/api/job/<id>/goal` 用 work/quotes.json 重排，不查价。
@@ -66,7 +70,7 @@ grep -rlE "sk-[A-Za-z0-9._-]{12,}" server web deploy skill tools/deploy_server.s
 
 ## 5. 部署（数据保留式）
 
-服务器布局：`/opt/flex-date-saver/{server,skill,web,deploy,node_modules,data,.releases}`，systemd 服务 `flex-date-saver`（127.0.0.1:8092，python3.11），nginx `conf.d/flex-date-saver.conf` 监听 8088。环境变量 `/etc/flex-date-saver.env`（root 600，含访问密码、飞猪 Key、百炼 Key）。
+服务器布局：`/opt/flex-date-saver/{server,skill,web,deploy,node_modules,data,.releases}`，systemd 服务 `flex-date-saver`（127.0.0.1:8092，python3.11），nginx `conf.d/flex-date-saver.conf` 监听 8088。环境变量 `/etc/flex-date-saver.env`（root 600，含飞猪 Key、百炼 Key、高德 Key、FDS_SECRET；FDS_PASSWORD 已不再使用）。
 
 ```bash
 tools/deploy_server.sh          # 只更新代码
@@ -106,6 +110,9 @@ remote-install.sh 的顺序：停服 → 备份 data/jobs 到 `.releases/<时间
 | 往返 / 座席 / 区域 / 品牌 | 往返查询正式 Key 下为空（两段单程相加）；火车座席参数无效；酒店区域关键词无效；brandName 不可靠——详见 docs/api-notes.md |
 | 服务器 Python | 系统自带 3.6 跑不了脚本（date.fromisoformat 等），服务用 /usr/bin/python3.11 |
 | 百炼模型额度 | qwen-plus / qwen-max 免费额度已用完且开着「仅用免费额度」；可用 qwen3.7-plus、qwen3.8-max、qwen-flash。余额不足时接口 403/insufficient_quota |
-| 外网访问 8088 | 阿里云轻量服务器防火墙要在控制台放行 TCP 8088，系统内 firewalld 未启用 |
+| 外网访问 8088 | 阿里云轻量服务器防火墙已放行 TCP 8088（2026-10-15），系统内 firewalld 未启用 |
+| 高德 QPS | 个人 Key 并发低，连续调用报 CUQPS_HAS_EXCEEDED_THE_LIMIT；server 与 amap_client 都有 0.35s 节流 + 重试，别改成大并发 |
+| 高德 Key | AMAP_KEY 只在 /etc/flex-date-saver.env，服务端调用，前端不出现；建议在高德控制台给 Key 设 IP 白名单 47.102.103.226 |
+| index.html 改动脚本 | 用 Python 精确替换时注意函数在文件里的先后顺序（曾因 index 顺序反了把代码插到了文件最前面） |
 | scp | 加 -O 走传统协议，否则可能卡死 |
 | 远程删除 | 部署脚本不用 rm，一律挪到 .releases/ |

@@ -46,7 +46,13 @@
     "area": "",
     "price_min": null,
     "price_max": null,
-    "specific_name": null
+    "specific_name": null,
+    "location": {
+      "mode": "station",
+      "max_drive_min": 30,
+      "max_km": 5,
+      "point": null
+    }
   },
   "goal": {
     "priority": "balance",

@@ -4,38 +4,32 @@
   "goal_cn": "省钱优先",
   "replay": false,
   "recorded_at": {
-    "first": "2026-10-15T15:01",
-    "last": "2026-10-15T15:09"
+    "first": "2026-10-15T21:33",
+    "last": "2026-10-15T21:33"
   },
   "errors": [],
   "warnings": [
+    "未配置高德 Key，第一晚酒店没有做位置筛选",
     "三亚→苏州 在 2026-11-23 没有查到航班（该日无航班或接口无数据）"
   ],
   "meta": {
-    "live_calls": 7,
-    "cache_hits": 9,
+    "live_calls": 11,
+    "cache_hits": 4,
     "skipped": 0,
-    "max_calls": 20,
+    "max_calls": 40,
     "stopped": null,
     "trial_mode": false,
     "replay": false,
     "total_candidates": 5,
     "estimated_queries": 25,
-    "hint_queries": 2,
-    "price_hints": {
-      "out|三亚|2026-11-19": 825.0,
-      "out|三亚|2026-11-20": 873.0,
-      "out|三亚|2026-11-21": 829.0,
-      "out|三亚|2026-11-22": 874.0,
-      "out|三亚|2026-11-25": 829.0,
-      "ret|三亚|2026-11-28": 560.0
-    },
+    "hint_queries": 0,
+    "price_hints": {},
     "selected": 3,
     "truncated": true,
     "pattern_skipped": 2,
     "evaluated_candidates": 1,
     "over_budget_candidates": 0,
-    "elapsed_s": 31.5
+    "elapsed_s": 28.4
   },
   "plans": [
     {
@@ -50,7 +44,7 @@
       "ret_date": "2026-11-23",
       "ret_weekday": "周一",
       "nights": 3,
-      "hotel_nights": 3,
+      "hotel_nights": 1,
       "out_mode": "请假白天出发",
       "ret_mode": "请假返程",
       "leave_dates": [
@@ -79,18 +73,18 @@
         "transport_per_person": 1280.0,
         "persons": 2,
         "transport_total": 2560.0,
-        "hotel_per_night": 143.0,
-        "hotel_nights": 3,
+        "hotel_per_night": 129.0,
+        "hotel_nights": 1,
         "rooms": 1,
-        "hotel_total": 429.0,
-        "total": 2989.0
+        "hotel_total": 129.0,
+        "total": 2689.0
       },
       "out": {
         "price": 841.0,
         "flight": {
           "kind": "flight",
           "price": 800.0,
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F26Vu49",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F069rBN",
           "direct": true,
           "layovers_min": [],
           "segments": [
@@ -109,7 +103,7 @@
         "train": {
           "kind": "train",
           "price": 41.0,
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F29xpQy",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F2ZNv8M",
           "direct": true,
           "layovers_min": [],
           "segments": [
@@ -137,7 +131,7 @@
         "flight": {
           "kind": "flight",
           "price": 400.0,
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F0B6jXb",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F0MsXAK",
           "direct": true,
           "layovers_min": [],
           "segments": [
@@ -156,7 +150,7 @@
         "train": {
           "kind": "train",
           "price": 39.0,
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1NWikb",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3pKllB",
           "direct": true,
           "layovers_min": [],
           "segments": [
@@ -183,32 +177,38 @@
         "shId": "60322002",
         "name": "莫言莫语设计师酒店(三亚亚龙湾博后店)",
         "star": "高档型",
-        "price_per_night": 143.0,
+        "price_per_night": 129.0,
         "address": "亚龙湾博后村委会新坡三组15号",
         "near": "近博后村",
         "pic": "https://img.alicdn.com/imgextra/i2/6000000003416/O1CN01uOGj5v1b6ZrT7Y4Sc_!!6000000003416-0-hotel.jpg",
-        "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F2Ii8Yh"
+        "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3pO03K",
+        "lng": "109.612556",
+        "lat": "18.244793"
       },
       "hotel_alts": [
         {
           "shId": "56046347",
           "name": "三亚凯瑞莱海景度假酒店(大东海店)",
           "star": "高档型",
-          "price_per_night": 152.0,
+          "price_per_night": 138.0,
           "address": "三亚市吉阳区大东海榆亚路428号",
           "near": "近德贝PADI潜水俱乐部",
           "pic": "https://img.alicdn.com/imgextra/i2/6000000001325/O1CN01cnOuS01LetvMg3jGw_!!6000000001325-2-hotel.png",
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F4Lz3ML"
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3BABYx",
+          "lng": "109.540744",
+          "lat": "18.230628"
         },
         {
-          "shId": "60827863",
-          "name": "三亚原野映像商务酒店（白鹭体育馆三亚站店）",
+          "shId": "53862283",
+          "name": "三亚碧海金沙酒店",
           "star": "高档型",
-          "price_per_night": 153.0,
-          "address": "金鸡岭路480号",
-          "near": "近三亚站",
-          "pic": "https://img.alicdn.com/imgextra/i2/6000000000686/O1CN01oc6v6f1GwEgZVkh65_!!6000000000686-0-hotel.jpg",
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F4LFSZG"
+          "price_per_night": 142.0,
+          "address": "三亚湾路195号",
+          "near": "近三亚湾",
+          "pic": "https://img.alicdn.com/imgextra/i3/6000000002068/O1CN01Xf9lhg1R9C49n0rmV_!!6000000002068-0-hotel.jpg",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F25ocHg",
+          "lng": "109.42606997524356",
+          "lat": "18.289739943075865"
         }
       ],
       "flags": [
@@ -216,7 +216,8 @@
         "去程站到机场换乘约70分钟(估算)",
         "回程火车余票需自行确认",
         "回程机场到站换乘约40分钟(估算)",
-        "酒店为参考起价"
+        "酒店为参考起价",
+        "只含第一晚住宿，其余 2 晚未计入总价"
       ],
       "estimated_holiday": false,
       "rank": 1,
@@ -244,10 +245,10 @@
     "有 2 个「下班后出发」的日期赶不上 22 点前起飞的航班，接受去程红眼或特种兵可解锁",
     "同类出发/返程方式连续两次无结果，已跳过其余 2 个同类日期组合以节省查询"
   ],
-  "min_feasible_total": 2989.0,
+  "min_feasible_total": 2689.0,
   "not_queried": [],
   "notes": [
-    "价格以飞猪预订页为准；酒店为每晚参考起价；火车余票需自行确认"
+    "价格以飞猪预订页为准；只安排第一晚住宿（总价只含第一晚）；酒店为参考起价；火车余票需自行确认"
   ],
   "system_messages": [],
   "ok": true,

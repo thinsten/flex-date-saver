@@ -33,10 +33,15 @@ def evaluate(q, req, cfg):
     persons = req["travelers"]["adults"] + (req["travelers"].get("children") or 0)
     rooms = req["rooms"]
     sf = req["goal"]["special_forces"]
-    hotel = q["hotel"]
     combos = []
+    by_arr = q.get("hotels_by_arrival") or {}
     for opt in q["options"]:
         for o in opt["out"]:
+            seg = o["flight"]["segments"][-1]
+            hl = by_arr.get(seg.get("to_full") or seg.get("to")) or ([q["hotel"]] + (q.get("hotel_alts") or []) if q.get("hotel") else [])
+            if not hl:
+                continue
+            hotel, alts = hl[0], hl[1:3]
             for r in opt["ret"]:
                 fl_arr = parse_dt(o["flight"]["segments"][-1]["arr"])
                 arrive = fl_arr + timedelta(minutes=cfg["arrive_to_hotel_min"]["air"])
@@ -45,17 +50,23 @@ def evaluate(q, req, cfg):
                     continue
                 slots = count_slots(arrive, leave, cfg)
                 n_slots = sum(len(v) for v in slots.values())
-                hotel_nights = q["nights"]
+                hotel_nights = 1  # 只安排第一晚，其余几晚用户自行安排、不计入总价
                 no_hotel = None
                 late = cfg["special_forces"]["no_hotel_if_arrive_after"]
                 if sf and fl_arr.date() > d(q["out_date"]) and fl_arr >= at(fl_arr.date(), late):
-                    hotel_nights -= 1
+                    hotel_nights = 0
                     no_hotel = q["out_date"]
                 transport = round(o["price"] + r["price"], 2)
                 hotel_cost = round(hotel["price_per_night"] * hotel_nights * rooms, 2)
                 total = round(transport * persons + hotel_cost, 2)
                 flags = list(dict.fromkeys(["去程" + f for f in o["flags"]] + ["回程" + f for f in r["flags"]]))
-                flags.append("酒店为参考起价")
+                if hotel_nights:
+                    flags.append("酒店为参考起价")
+                if q["nights"] > hotel_nights:
+                    flags.append(f"只含第一晚住宿，其余 {q['nights'] - hotel_nights} 晚未计入总价")
+                if hotel.get("too_far"):
+                    dm = f"开车约 {hotel['drive_min']} 分钟" if hotel.get("drive_min") else f"约 {hotel.get('dist_km')} 公里"
+                    flags.append(f"酒店离{hotel.get('ref') or '目标位置'}{dm}，超出你设的范围")
                 if q.get("estimated_holiday"):
                     flags.append("跨预估假期")
                 if req["travelers"].get("children"):
@@ -75,7 +86,7 @@ def evaluate(q, req, cfg):
                               "persons": persons, "transport_total": round(transport * persons, 2),
                               "hotel_per_night": hotel["price_per_night"], "hotel_nights": hotel_nights,
                               "rooms": rooms, "hotel_total": hotel_cost, "total": total},
-                    "out": o, "ret": r, "hotel": hotel, "hotel_alts": q.get("hotel_alts") or [],
+                    "out": o, "ret": r, "hotel": hotel, "hotel_alts": alts,
                     "flags": flags,
                     "estimated_holiday": q.get("estimated_holiday", False),
                 })
@@ -187,7 +198,7 @@ def rank(req, quotes_doc, goal=None, top_n=3):
                                "ret_date": ds[0]["ret_date"], "total": ds[0]["price"]["total"],
                                "slot_count": ds[0]["slot_count"], "leave_days": ds[0]["leave_days"]} if ds else None)
 
-    notes = ["价格以飞猪预订页为准；酒店为每晚参考起价；火车余票需自行确认"]
+    notes = ["价格以飞猪预订页为准；只安排第一晚住宿（总价只含第一晚）；酒店为参考起价；火车余票需自行确认"]
     if any(p["estimated_holiday"] for p in plans):
         notes.append("2027 年放假安排为预估，以国务院公布为准")
     sys_msgs = sorted({x for x in quotes_doc.get("system_messages", []) if x})

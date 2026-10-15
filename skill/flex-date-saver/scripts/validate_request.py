@@ -46,7 +46,7 @@ def deep_merge(base, over):
 
 
 def validate(raw, cal=None):
-    cal = cal or HolidayCalendar()
+    cal = cal or HolidayCalendar.for_request(raw)
     dft = load_config("defaults")
     lim = dft["limits"]
     missing, conflicts, warnings, applied = [], [], [], []
@@ -79,12 +79,17 @@ def validate(raw, cal=None):
         missing.append({"field": "destinations", "message": "目的地（A2，最多 2 个）"})
     win = req.get("window") or {}
     if not (win.get("start") and win.get("end")):
-        missing.append({"field": "window", "message": "出行时间窗口（A3）"})
+        missing.append({"field": "window", "message": "最早出发日期和最晚到达日期（A3）"})
     nights = req.get("nights")
     if isinstance(nights, int):
         req["nights"] = nights = {"min": nights, "max": nights}
+    if isinstance(nights, list):
+        nights = {"options": nights}
+    if isinstance(nights, dict) and nights.get("options"):
+        opts = sorted({int(x) for x in nights["options"] if str(x).isdigit() and int(x) >= 1})
+        req["nights"] = nights = {"min": opts[0], "max": opts[-1], "options": opts} if opts else {}
     if not (isinstance(nights, dict) and nights.get("min") and nights.get("max")):
-        missing.append({"field": "nights", "message": "玩几晚（A4，可填范围）"})
+        missing.append({"field": "nights", "message": "玩几晚（A4，可多选）"})
     adults = (req.get("travelers") or {}).get("adults")
     if not adults:
         missing.append({"field": "travelers.adults", "message": "成人人数（A5）"})
@@ -109,14 +114,14 @@ def validate(raw, cal=None):
             conflict("bad_window", "时间窗口日期格式不对，应为 YYYY-MM-DD。")
         if win_ok:
             if we < ws:
-                conflict("window_reversed", "时间窗口结束日早于开始日。", ["对调开始和结束日期"])
+                conflict("window_reversed", "最晚到达日期早于最早出发日期。", ["对调两个日期"])
                 win_ok = False
             elif ws <= today():
-                conflict("window_in_past", f"时间窗口需从明天（{today() + timedelta(days=1)}）或之后开始。",
-                         ["把开始日期改到明天之后"])
+                conflict("window_in_past", f"最早出发日期需在明天（{today() + timedelta(days=1)}）或之后。",
+                         ["把最早出发日期改到明天之后"])
                 win_ok = False
             elif (we - ws).days + 1 > lim["max_window_days"]:
-                conflict("window_too_long", f"时间窗口最长 {lim['max_window_days']} 天，当前 {(we - ws).days + 1} 天。",
+                conflict("window_too_long", f"出发到到达的日期范围最长 {lim['max_window_days']} 天，当前 {(we - ws).days + 1} 天。",
                          ["缩短到 2 个月以内", "拆成两次分别规划"])
                 win_ok = False
 
@@ -129,7 +134,7 @@ def validate(raw, cal=None):
         elif nights["max"] > lim["max_nights"]:
             conflict("too_many_nights", f"最多支持玩 {lim['max_nights']} 晚。")
         elif win_ok and nights["min"] > (we - ws).days:
-            conflict("nights_exceed_window", f"窗口只有 {(we - ws).days + 1} 天，放不下 {nights['min']} 晚。",
+            conflict("nights_exceed_window", f"日期范围只有 {(we - ws).days + 1} 天，放不下 {nights['min']} 晚。",
                      ["扩大时间窗口", "减少晚数"])
 
     if adults is not None and (not isinstance(adults, int) or adults < 1):
@@ -157,8 +162,15 @@ def validate(raw, cal=None):
         if cm is None:
             cm = dft["default_commute_min"][t]
             warn("commute_default", f"{s['name']} 未填通勤时间，按 {cm} 分钟估算。")
-        stations.append({"name": s["name"], "type": t, "commute_min": int(cm)})
+        st = {"name": s["name"], "type": t, "commute_min": int(cm)}
+        if s.get("city"):
+            st["city"] = re.sub(r"(市|地区|自治州|盟)$", "", s["city"].strip())
+        if s.get("dist_km") is not None:
+            st["dist_km"] = s["dist_km"]
+        stations.append(st)
+    stations.sort(key=lambda x: (x["type"], x["commute_min"]))  # 同类型按通勤从短到长（邻近城市火车取最快的那个站）
     req["stations"] = stations
+    req["home_city"] = re.sub(r"(市|地区|自治州|盟)$", "", req["home_city"]) if req["home_city"] else req["home_city"]
     if home and not any(s["type"] == "air" for s in stations):
         warn("no_airport_commute", f"未填到{home}机场的通勤时间，按 {dft['default_commute_min']['air']} 分钟估算。")
 
@@ -191,6 +203,15 @@ def validate(raw, cal=None):
     if g.get("budget_total") is not None and g["budget_total"] <= 0:
         conflict("bad_budget", "总预算需大于 0，或不设上限。")
 
+    # 自定义上班日（单休/调休）
+    cw = []
+    for x in req.get("custom_workdays") or []:
+        try:
+            cw.append(str(d(x)))
+        except (ValueError, TypeError):
+            pass
+    req["custom_workdays"] = sorted(set(cw))
+
     # 请假
     lv = req["leave"]
     if lv.get("max_days") is None or lv["max_days"] < 0:
@@ -199,14 +220,14 @@ def validate(raw, cal=None):
     if win_ok:
         outside = [x for x in allowed if not (ws <= d(x) <= we)]
         if outside:
-            warn("leave_outside_window", f"可请假日期 {', '.join(outside)} 不在时间窗口内，已忽略。")
+            warn("leave_outside_window", f"可请假日期 {', '.join(outside)} 不在出行日期范围内，已忽略。")
         non_work = [x for x in allowed if (ws <= d(x) <= we) and not cal.is_workday(x)]
         if non_work:
             warn("leave_on_holiday", f"{', '.join(non_work)} 本来就不用上班，无需请假，已忽略。")
         kept = [x for x in allowed if x not in outside and x not in non_work]
         if lv["max_days"] > 0 and allowed and not kept:
-            conflict("leave_all_invalid", "勾选的可请假日期都不在窗口内（或都是假日），等于不能请假。",
-                     ["在窗口内重新勾选可请假的工作日", "把最多请假天数改为 0，只用周末和假期"])
+            conflict("leave_all_invalid", "勾选的可请假日期都不在出行日期范围内（或都是休息日），等于不能请假。",
+                     ["在日期范围内重新勾选可请假的工作日", "把最多请假天数改为 0，只用周末和假期"])
         allowed = kept
         if lv["max_days"] > len(allowed):
             if allowed or lv["max_days"]:
@@ -229,7 +250,7 @@ def validate(raw, cal=None):
         if not cands:
             conflict("no_feasible_dates",
                      "在你的请假约束下，窗口内找不到能安排的出发/返程日期组合。",
-                     ["多勾选几个可请假的工作日或提高请假上限", "缩短晚数", "扩大时间窗口以包含更多周末或假期",
+                     ["多勾选几个可请假的工作日或提高请假上限", "缩短晚数", "扩大出行日期范围以包含更多周末或假期",
                       "接受特种兵（允许早班直接上班）"])
     result["ok"] = not missing and not conflicts
     return result

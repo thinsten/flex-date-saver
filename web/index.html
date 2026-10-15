@@ -60,6 +60,28 @@
   .ok{color:var(--ok);font-weight:600}
   .disabled{opacity:.55;pointer-events:none}
   @media (max-width:560px){header h1{font-size:20px}.grid{grid-template-columns:1fr 1fr}.seg label{padding:7px 10px}}
+  /* ---- 使用说明、晚数按钮、连休段、站点 ---- */
+  #intro{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin:10px 0 4px;font-size:14px}
+  #intro b.t{display:block;font-size:15px;margin-bottom:4px}
+  #intro ol{margin:6px 0 4px 18px;padding:0}
+  #intro li{margin:3px 0}
+  #intro .muted{font-size:12px}
+  .nchips{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px}
+  .nchip{border:1px solid var(--line);border-radius:10px;padding:6px 12px;cursor:pointer;font-size:14px;background:#fff;user-select:none}
+  .nchip small{color:var(--sub);margin-left:4px}
+  .nchip.on{background:var(--acc-soft);border-color:var(--acc);color:var(--acc);font-weight:600}
+  .day.cw{background:#e7f5ff;border-color:#74c0fc;color:var(--ink)}
+  .day.cw small{color:#1c7ed6}
+  .day.cw.sel{background:var(--acc);color:#fff;border-color:var(--acc)}
+  #blocks{font-size:13px;margin:6px 0 12px}
+  #blocks li{margin:2px 0}
+  .st .x{border:0;background:none;color:#adb5bd;cursor:pointer;font-size:16px;padding:0 2px}
+  .st .meta{font-size:11px;color:var(--sub)}
+  .tips{border:1px solid var(--line);border-radius:8px;background:#fff;max-height:240px;overflow:auto;margin-top:4px}
+  .tips div{padding:7px 10px;cursor:pointer;font-size:14px;border-bottom:1px solid #f1efe9}
+  .tips div:hover{background:var(--acc-soft)}
+  .tips small{color:var(--sub);margin-left:6px}
+  .picked{font-size:13px;color:var(--ok);margin-top:4px}
   /* ---- 服务器模式 ---- */
   .srv{display:none}
   body.server .srv{display:block}
@@ -106,6 +128,18 @@
   <p class="srv" id="subtitle">说一句需求让 AI 帮你填表，或直接点选。确认表单后点「开始规划」，用飞猪实时报价算出最省 / 最多玩的出发方案。</p>
 </header>
 <main>
+<section id="intro">
+  <b class="t">这是干什么的</b>
+  手里只有一两天年假，想在一段时间里出去玩一趟？告诉它你从哪出发、想去哪、什么时候能走、哪天能请假，它会用飞猪的实时机票、火车、酒店报价，帮你算出<b>请假最少、总价最低或在目的地玩得最多</b>的 3 个出发方案，每段都附预订链接。
+  <b class="t" style="margin-top:10px">怎么用</b>
+  <ol>
+    <li><span class="srv" style="display:inline">在下面一句话说需求，点「AI 帮我填表」；或者</span>直接在表单里点选。大部分项有默认值，只改需要改的。</li>
+    <li>选出发地后会自动列出 100 公里内的机场和火车站，开车时间已估好，可以改。</li>
+    <li>在日历上点选能请假的日期（周末要上班的，点一下周末改成上班）。</li>
+    <li><span class="srv" style="display:inline">点底部「开始规划」，约 1 分钟出结果，可以一键切换省钱 / 多玩，也能把结果分享给同行的朋友。</span><span class="copyonly">点底部「生成需求单」并复制，粘贴给「弹性日期省钱规划」智能体。</span></li>
+  </ol>
+  <div class="muted">住宿只安排到达当晚（第一晚），之后几晚按你的行程自己定；价格以飞猪预订页为准，火车余票需自行确认。</div>
+</section>
 <section id="nl" class="srv">
   <h2><span class="tag">AI</span>一句话说需求（可选）</h2>
   <textarea id="nlText" placeholder="例：我在苏州，12 月想和女朋友去三亚玩 3 晚，最多请 1 天假，周五 18 点下班，不坐红眼，住四星，越省越好"></textarea>
@@ -118,17 +152,29 @@
 <section id="secA">
   <h2><span class="tag">A</span>基础信息</h2>
   <div class="grid">
-    <label class="f"><b>常住城市 <i>*</i></b>
+    <label class="f"><b>出发城市 <i>*</i></b>
       <input type="text" id="home" list="cityList" placeholder="如：苏州"></label>
     <label class="f"><b>目的地 1 <i>*</i></b><input type="text" id="dest1" placeholder="如：三亚"></label>
     <label class="f"><b>目的地 2（可选，横向对比）</b><input type="text" id="dest2" placeholder="如：西双版纳"></label>
   </div>
-  <div class="grid">
-    <label class="f"><b>时间窗口开始 <i>*</i></b><input type="date" id="wStart"></label>
-    <label class="f"><b>时间窗口结束 <i>*</i></b><input type="date" id="wEnd"></label>
-    <label class="f"><b>玩几晚（最少） <i>*</i></b><input type="number" id="nMin" min="1" max="14" value="3"></label>
-    <label class="f"><b>玩几晚（最多）</b><input type="number" id="nMax" min="1" max="14" value="3"></label>
+  <div class="srv" style="margin:-4px 0 12px">
+    <div class="row" style="margin-bottom:6px"><div class="seg">
+      <label><input type="radio" name="omode" value="city" checked><span>按城市</span></label>
+      <label><input type="radio" name="omode" value="addr"><span>精确到地址</span></label>
+    </div><span class="muted">精确到地址时，开车时间从这个地址算</span></div>
+    <div id="addrWrap" style="display:none">
+      <input type="text" id="addr" placeholder="输入小区、公司或地标，如：漕河泾开发区" autocomplete="off">
+      <div class="tips" id="addrTips" style="display:none"></div>
+    </div>
+    <div class="picked" id="originInfo"></div>
   </div>
+  <div class="grid">
+    <label class="f"><b>最早出发日期 <i>*</i></b><input type="date" id="wStart"></label>
+    <label class="f"><b>最晚到达日期 <i>*</i></b><input type="date" id="wEnd"></label>
+  </div>
+  <div class="hint" style="margin-top:-6px">最晚到达 = 最晚哪天要回到家。系统会在这段时间里找出发和返回的日期组合。</div>
+  <div class="f"><b style="font-size:13px">玩几晚（可多选） <i style="color:var(--warn);font-style:normal">*</i></b></div>
+  <div class="nchips" id="nightChips"></div>
   <div class="grid">
     <label class="f"><b>成人 <i>*</i></b><input type="number" id="adults" min="1" max="9" value="2"></label>
     <label class="f"><b>儿童</b><input type="number" id="children" min="0" max="9" value="0"></label>
@@ -146,12 +192,17 @@
     <label class="f"><b>最多请几天假</b><input type="number" id="maxLeave" min="0" max="10" value="1"></label>
   </div>
   <div class="f" style="margin-bottom:6px"><b style="font-size:13px">到各机场、车站要多少分钟（从公司或家出发）</b></div>
-  <div class="stations" id="stations"><div class="hint">先填常住城市，会自动列出机场和车站。</div></div>
+  <div class="hint srv" id="stHint">选好出发地后，自动列出 100 公里内的机场和火车站，开车时间按当前路况估算，可以手动改；用不上的点 × 去掉。</div>
+  <div class="stations" id="stations"><div class="hint">先填出发城市，会自动列出机场和车站。</div></div>
   <div class="row"><input type="text" id="stName" placeholder="手动添加站点，如：昆山南站" style="max-width:220px">
     <select id="stType" style="max-width:100px"><option value="train">火车站</option><option value="air">机场</option></select>
     <button type="button" class="ghost" id="stAdd" style="padding:7px 14px">添加</button></div>
-  <div class="f" style="margin-bottom:6px"><b style="font-size:13px">可以请假的日期（点击勾选，灰色为周末/假期，不用请假）</b></div>
-  <div id="cal" class="hint">先选时间窗口。</div>
+  <div class="f" style="margin-bottom:6px"><b style="font-size:13px">可以请假的日期</b></div>
+  <div class="hint">点工作日 = 可以请假（橙色）。灰色是周末/假期；周末要上班的，点一下灰色格子改成「上班」（蓝色），再点一下可勾为请假。</div>
+  <div class="row"><button type="button" class="ghost" id="satWork" style="padding:6px 12px;font-size:13px">每周六上班</button>
+    <button type="button" class="ghost" id="sunWork" style="padding:6px 12px;font-size:13px">每周日上班</button></div>
+  <div id="cal" class="hint">先选出发和到达日期。</div>
+  <div id="blocks"></div>
 </section>
 
 <section id="secC">
@@ -182,7 +233,22 @@
 </section>
 
 <section id="secD">
-  <h2><span class="tag">D</span>住宿</h2>
+  <h2><span class="tag">D</span>住宿（只安排第一晚）</h2>
+  <div class="hint">只帮你订到达当晚的酒店，之后几晚按你的行程自己定；方案总价只含第一晚。</div>
+  <div class="f" style="margin-bottom:4px"><b style="font-size:13px">第一晚住在哪</b></div>
+  <div class="row">
+    <label class="chk"><input type="radio" name="hloc" value="station" checked>离到达的机场开车
+      <select id="locMin" style="width:auto;margin:0 4px"><option>15</option><option selected>30</option><option>45</option><option>60</option></select>分钟以内</label>
+  </div>
+  <div class="row srv">
+    <label class="chk"><input type="radio" name="hloc" value="point">离某个地点
+      <select id="locKm" style="width:auto;margin:0 4px"><option>1</option><option>3</option><option selected>5</option><option>10</option></select>公里以内</label>
+  </div>
+  <div id="ptWrap" class="srv" style="display:none;margin:-4px 0 10px 24px">
+    <input type="text" id="ptQ" placeholder="景区、商圈或地址，如：故宫、外滩" autocomplete="off">
+    <div class="tips" id="ptTips" style="display:none"></div><div class="picked" id="ptInfo"></div>
+  </div>
+  <div class="row"><label class="chk"><input type="radio" name="hloc" value="none">不限位置（全城最便宜）</label></div>
   <div class="row"><div class="seg">
     <label><input type="radio" name="hmode" value="filter" checked><span>按条件筛</span></label>
     <label><input type="radio" name="hmode" value="specific"><span>指定某一家</span></label>
@@ -200,7 +266,7 @@
     <div class="grid">
       <label class="f"><b>连锁</b><select id="chain"><option value="any">不限</option><option value="chain_only">只要连锁品牌</option><option value="brand">指定品牌…</option></select></label>
       <label class="f" id="brandWrap" style="display:none"><b>品牌名</b><input type="text" id="brand" placeholder="如：全季、亚朵、希尔顿"></label>
-      <label class="f"><b>区域（可选）</b><input type="text" id="area" placeholder="行政区如吉阳区，或商圈如亚龙湾"></label>
+      <input type="hidden" id="area" value="">
       <label class="f"><b>每晚最低价</b><input type="number" id="pMin" min="0" placeholder="不限"></label>
       <label class="f"><b>每晚最高价</b><input type="number" id="pMax" min="0" placeholder="不限"></label>
     </div>
@@ -270,15 +336,17 @@ const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(2,"0");
 const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); };
-let extraStations = [], leaveSel = new Set(), nearbySel = new Set();
+let extraStations = [], leaveSel = new Set(), nearbySel = new Set(), customWork = new Set(), nightSel = new Set([2, 3]);
+let geoStations = null, originPoint = null, showAllTrains = false, hotelPoint = null, pendingCommute = [];
 
 Object.keys(STATIONS).concat(Object.keys(NEARBY)).filter((v,i,a)=>a.indexOf(v)===i)
   .forEach(c => { const o = document.createElement("option"); o.value = c; $("cityList").appendChild(o); });
 
 function holidayOf(s){ for (const h of HOLIDAYS) if (s >= h.start && s <= h.end) return h; return null; }
-function isWorkday(d){ const h = holidayOf(iso(d)); if (h) return false; const w = d.getDay(); return w !== 0 && w !== 6; }
+function isWorkday(d){ if (customWork.has(iso(d))) return true; const h = holidayOf(iso(d)); if (h) return false; const w = d.getDay(); return w !== 0 && w !== 6; }
 
 function renderStations(){
+  if (window.FDS_SERVER && geoStations) return renderGeoStations();
   const city = $("home").value.trim(), box = $("stations");
   const keep = {}; box.querySelectorAll("input[data-name]").forEach(i => keep[i.dataset.name] = i.value);
   const list = (STATIONS[city] || []).concat(extraStations);
@@ -291,6 +359,21 @@ function renderStations(){
       <input type="number" min="0" max="300" data-name="${name}" data-type="${type}" value="${def}"><span style="font-size:12px;color:var(--sub)">分钟</span>`;
     box.appendChild(div);
   });
+}
+function renderGeoStations(){
+  const box = $("stations"), list = geoStations.filter(x => !x.removed);
+  const folded = list.filter(x => x.folded).length;
+  const shown = list.filter(x => showAllTrains || !x.folded).concat(extraStations.map(([name, type]) => ({name, type, extra: true, commute_min: type === "air" ? 60 : 30})));
+  box.innerHTML = shown.map(x => `<div class="st"><span class="t ${x.type}">${x.type === "air" ? "机场" : "火车"}</span>
+      <span class="n">${esc(x.name)}<br><span class="meta">${x.extra ? "手动添加" : `${esc(x.city)} · ${x.dist_km} 公里${x.estimated ? " · 估算" : ""}`}</span></span>
+      <input type="number" min="0" max="400" data-name="${esc(x.name)}" data-type="${x.type}" value="${x.commute_min}"><span style="font-size:12px;color:var(--sub)">分钟</span>
+      <button type="button" class="x" data-drop="${esc(x.name)}" title="去掉">×</button></div>`).join("")
+    + (folded ? `<button type="button" class="linkbtn" id="moreTrains">${showAllTrains ? "收起较远的火车站" : `展开更多火车站（${folded} 个）`}</button>` : "");
+  box.querySelectorAll("input[data-name]").forEach(i => i.onchange = () => { const g = geoStations.find(x => x.name === i.dataset.name); if (g) g.commute_min = Number(i.value); });
+  box.querySelectorAll("[data-drop]").forEach(b => b.onclick = () => {
+    const g = geoStations.find(x => x.name === b.dataset.drop); if (g) g.removed = true; else extraStations = extraStations.filter(e => e[0] !== b.dataset.drop);
+    renderGeoStations(); });
+  const mt = $("moreTrains"); if (mt) mt.onclick = () => { showAllTrains = !showAllTrains; renderGeoStations(); };
 }
 function renderNearby(){
   const city = $("home").value.trim(), box = $("nearbyChips");
@@ -306,11 +389,12 @@ function renderNearby(){
 }
 function renderCal(){
   const s = $("wStart").value, e = $("wEnd").value, box = $("cal");
-  if (!s || !e || e < s){ box.className = "hint"; box.innerHTML = "先选时间窗口。"; return; }
+  if (!s || !e || e < s){ box.className = "hint"; box.innerHTML = "先选出发和到达日期。"; $("blocks").innerHTML = ""; return; }
   box.className = "cal"; box.innerHTML = "";
   "一二三四五六日".split("").forEach(w => { const h = document.createElement("div"); h.className = "h"; h.textContent = w; box.appendChild(h); });
   let d = parse(s), end = parse(e), month = -1;
   for (const k of [...leaveSel]) if (k < s || k > e) leaveSel.delete(k);
+  for (const k of [...customWork]) if (k < s || k > e) customWork.delete(k);
   while (d <= end){
     if (d.getMonth() !== month){
       month = d.getMonth();
@@ -318,14 +402,50 @@ function renderCal(){
       const lead = (d.getDay() + 6) % 7;
       for (let i = 0; i < lead; i++){ const b = document.createElement("div"); b.className = "day blank"; box.appendChild(b); }
     }
-    const k = iso(d), h = holidayOf(k), work = isWorkday(d);
+    const k = iso(d), h = holidayOf(k), cw = customWork.has(k), work = isWorkday(d);
     const cell = document.createElement("div");
-    cell.className = "day" + (work ? "" : " off") + (h && h.est ? " est" : "") + (leaveSel.has(k) ? " sel" : "");
-    cell.innerHTML = `${d.getDate()}<small>${h ? h.name + (h.est ? "·预估" : "") : (work ? "" : "周末")}</small>`;
-    if (work) cell.onclick = () => { leaveSel.has(k) ? leaveSel.delete(k) : leaveSel.add(k); renderCal(); };
+    cell.className = "day" + (work ? "" : " off") + (cw ? " cw" : "") + (h && h.est && !cw ? " est" : "") + (leaveSel.has(k) ? " sel" : "");
+    cell.innerHTML = `${d.getDate()}<small>${cw ? (leaveSel.has(k) ? "请假" : "上班") : h ? h.name + (h.est ? "·预估" : "") : (work ? (leaveSel.has(k) ? "请假" : "") : "周末")}</small>`;
+    cell.title = work ? "点击切换：可以请假 / 不请假" : "点击把这天改成上班（单休、调休）";
+    cell.onclick = () => {
+      if (!work){ customWork.add(k); }
+      else if (cw && leaveSel.has(k)){ leaveSel.delete(k); customWork.delete(k); }
+      else if (leaveSel.has(k)) leaveSel.delete(k); else leaveSel.add(k);
+      renderCal();
+    };
     box.appendChild(cell);
     d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
   }
+  renderBlocks();
+}
+function renderBlocks(){
+  const s = $("wStart").value, e = $("wEnd").value; if (!s || !e) return;
+  const W = "日一二三四五六", blocks = []; let cur = null;
+  for (let d = parse(s); d <= parse(e); d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1)){
+    const k = iso(d), free = !isWorkday(d) || leaveSel.has(k);
+    if (free){ if (!cur){ cur = {start: d, end: d, leave: []}; blocks.push(cur); } cur.end = d; if (leaveSel.has(k)) cur.leave.push(k); }
+    else cur = null;
+  }
+  const maxL = num("maxLeave", 0), md2 = d => `${d.getMonth()+1}/${d.getDate()} 周${W[d.getDay()]}`;
+  const items = blocks.filter(b => b.end > b.start || b.leave.length).map(b => {
+    const days = Math.round((b.end - b.start) / 864e5) + 1;
+    const lv = b.leave.length ? `（请 ${b.leave.length} 天${b.leave.length > maxL ? `，超过最多 ${maxL} 天，只会用到其中一部分` : ""}）` : "（不用请假）";
+    return `<li>${md2(b.start)}${days > 1 ? " – " + md2(b.end) : ""} · 连休 ${days} 天${lv}</li>`;
+  });
+  $("blocks").innerHTML = items.length
+    ? `<div class="muted">一次出行必须落在一段连续的休息里（出发到回家之间不能回去上班），可以组成的连休段：</div><ul style="margin:4px 0 0 18px;padding:0">${items.slice(0, 12).join("")}</ul>${items.length > 12 ? `<div class="muted">…共 ${items.length} 段</div>` : ""}`
+    : "";
+}
+function toggleWeekday(w){
+  const s = $("wStart").value, e = $("wEnd").value; if (!s || !e) return;
+  const days = []; for (let d = parse(s); d <= parse(e); d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1)) if (d.getDay() === w) days.push(iso(d));
+  const allOn = days.length && days.every(k => customWork.has(k));
+  days.forEach(k => { if (allOn){ customWork.delete(k); leaveSel.delete(k); } else customWork.add(k); });
+  renderCal();
+}
+function renderNights(){
+  $("nightChips").innerHTML = [1, 2, 3, 4, 5, 6, 7].map(n => `<span class="nchip${nightSel.has(n) ? " on" : ""}" data-n="${n}">${n} 晚<small>${n + 1} 天</small></span>`).join("");
+  $("nightChips").querySelectorAll(".nchip").forEach(c => c.onclick = () => { const n = +c.dataset.n; nightSel.has(n) ? nightSel.delete(n) : nightSel.add(n); renderNights(); });
 }
 const redeyePrev = {};
 function syncSF(){
@@ -347,13 +467,14 @@ const checked = name => [...document.querySelectorAll(`input[name=${name}]:check
 function build(){
   const errs = [];
   const home = $("home").value.trim(), dests = [$("dest1").value.trim(), $("dest2").value.trim()].filter(Boolean);
-  if (!home) errs.push("请填写常住城市（A）");
+  if (!home) errs.push("请填写出发城市（A）");
   if (!dests.length) errs.push("请至少填写 1 个目的地（A）");
-  if (!$("wStart").value || !$("wEnd").value) errs.push("请选择时间窗口（A）");
-  else if ($("wEnd").value < $("wStart").value) errs.push("时间窗口结束日早于开始日");
-  let nMin = num("nMin"), nMax = num("nMax", nMin);
-  if (!nMin || nMin < 1) errs.push("请填写玩几晚（A）");
-  if (nMin && nMax && nMax < nMin) errs.push("最多晚数不能小于最少晚数");
+  if (!$("wStart").value || !$("wEnd").value) errs.push("请选择最早出发日期和最晚到达日期（A）");
+  else if ($("wEnd").value < $("wStart").value) errs.push("最晚到达日期早于最早出发日期");
+  const nights = [...nightSel].sort((a, b) => a - b);
+  if (!nights.length) errs.push("请选择玩几晚（A）");
+  const hloc = (document.querySelector('input[name=hloc]:checked') || {}).value || "none";
+  if (hloc === "point" && !hotelPoint) errs.push("请搜索并选择第一晚要靠近的地点（D）");
   if (!num("adults") || num("adults") < 1) errs.push("成人至少 1 位");
   const hmode = document.querySelector('input[name=hmode]:checked').value;
   if (hmode === "specific" && !$("hName").value.trim()) errs.push("请填写指定酒店名称（D）");
@@ -362,16 +483,24 @@ function build(){
   if (!seats.length) errs.push("请至少选一种火车座席（C）");
   $("errs").innerHTML = errs.map(e => "· " + e).join("<br>");
   if (errs.length) return null;
-  const stations = [...$("stations").querySelectorAll("input[data-name]")]
+  let stations = [...$("stations").querySelectorAll("input[data-name]")]
     .map(i => ({name: i.dataset.name, type: i.dataset.type, commute_min: i.value === "" ? null : Number(i.value)}));
+  if (window.FDS_SERVER && geoStations){
+    const typed = Object.fromEntries(stations.map(x => [x.name, x.commute_min]));
+    stations = geoStations.filter(x => !x.removed).map(x => ({name: x.name, type: x.type, city: x.city, dist_km: x.dist_km,
+      commute_min: typed[x.name] != null ? typed[x.name] : x.commute_min}))
+      .concat(extraStations.map(([name, type]) => ({name, type, commute_min: typed[name] != null ? typed[name] : (type === "air" ? 60 : 30)})));
+  }
   const chainV = $("chain").value;
   return {
     version: "1", home_city: home, destinations: dests,
     window: {start: $("wStart").value, end: $("wEnd").value},
-    nights: {min: nMin, max: nMax || nMin},
+    nights: {min: nights[0], max: nights[nights.length - 1], options: nights},
+    custom_workdays: [...customWork].sort(),
     travelers: {adults: num("adults"), children: num("children", 0)}, rooms: num("rooms", 1),
     work: {off_time: $("offTime").value || "18:00", start_time: $("startTime").value || "09:00"},
     stations,
+    ...(window.FDS_SERVER && geoStations ? {stations_source: "amap", origin_point: originPoint} : {}),
     leave: {allowed_dates: [...leaveSel].sort(), max_days: num("maxLeave", 0)},
     return_home_by: $("homeBy").value || "23:00",
     transport: {
@@ -384,6 +513,7 @@ function build(){
       mode: hmode, stars: checked("star").map(Number), types: checked("htype"),
       chain: chainV === "brand" ? "brand:" + $("brand").value.trim() : chainV,
       area: $("area").value.trim(), price_min: num("pMin"), price_max: num("pMax"),
+      location: {mode: hloc, max_drive_min: Number($("locMin").value), max_km: Number($("locKm").value), point: hloc === "point" ? hotelPoint : null},
       specific_name: hmode === "specific" ? $("hName").value.trim() : null
     },
     goal: {priority: document.querySelector('input[name=goal]:checked').value, special_forces: $("sf").checked, budget_total: num("budget")}
@@ -411,7 +541,15 @@ $("chain").addEventListener("change", syncHotel);
 document.querySelectorAll("input[name=hmode]").forEach(r => r.addEventListener("change", syncHotel));
 $("stAdd").onclick = () => { const n = $("stName").value.trim(); if (!n) return; extraStations.push([n, $("stType").value]); $("stName").value = ""; renderStations(); };
 $("btnGen").onclick = gen; $("btnCopy").onclick = copy;
+function syncLoc(){
+  const v = (document.querySelector('input[name=hloc]:checked') || {}).value;
+  if ($("ptWrap")) $("ptWrap").style.display = v === "point" && window.FDS_SERVER ? "block" : "none";
+}
+document.querySelectorAll("input[name=hloc]").forEach(r => r.addEventListener("change", syncLoc));
+$("satWork").onclick = () => toggleWeekday(6); $("sunWork").onclick = () => toggleWeekday(0);
+$("maxLeave").addEventListener("input", renderBlocks);
 (function init(){
+  renderNights();
   const t = new Date(); const s = new Date(t.getFullYear(), t.getMonth(), t.getDate() + 14), e = new Date(s.getFullYear(), s.getMonth(), s.getDate() + 30);
   $("wStart").value = iso(s); $("wEnd").value = iso(e); renderCal(); renderNearby(); syncHotel();
 })();
@@ -421,11 +559,22 @@ function setChecks(name, vals){ document.querySelectorAll(`input[name=${name}]`)
 function nearestOpt(sel, v){ const opts = [...$(sel).options].map(o => Number(o.value)); $(sel).value = String(opts.reduce((a, b) => Math.abs(b - v) < Math.abs(a - v) ? b : a)); }
 function fill(r){
   r = r || {};
-  if (r.home_city){ $("home").value = r.home_city; extraStations = []; nearbySel.clear(); }
+  if (r.stations_source === "amap" && r.stations && window.FDS_SERVER){
+    geoStations = r.stations.map(x => ({...x})); showAllTrains = false; originPoint = r.origin_point || null;
+    if (r.home_city) $("home").value = r.home_city;
+    $("originInfo").textContent = originPoint ? "出发点：" + (originPoint.name || originPoint.address || "") : "";
+  } else if (r.home_city && r.home_city !== $("home").value.trim()){
+    $("home").value = r.home_city; extraStations = []; nearbySel.clear();
+    if (window.FDS_SERVER){ geoStations = null; originPoint = null; pendingCommute = r.stations || []; geoForCity(r.home_city); }
+  } else if (window.FDS_SERVER && r.stations && geoStations){ pendingCommute = r.stations; applyPendingCommute(); }
   const d = r.destinations || [];
   if (d.length){ $("dest1").value = d[0] || ""; $("dest2").value = d[1] || ""; }
   if (r.window){ if (r.window.start) $("wStart").value = r.window.start; if (r.window.end) $("wEnd").value = r.window.end; }
-  if (r.nights){ if (r.nights.min) $("nMin").value = r.nights.min; $("nMax").value = r.nights.max || r.nights.min || $("nMax").value; }
+  if (r.nights){
+    const o = r.nights.options || (r.nights.min ? Array.from({length: (r.nights.max || r.nights.min) - r.nights.min + 1}, (_, i) => r.nights.min + i) : []);
+    if (o.length){ nightSel = new Set(o.map(Number)); renderNights(); }
+  }
+  if (r.custom_workdays) customWork = new Set(r.custom_workdays);
   if (r.travelers){ if (r.travelers.adults) $("adults").value = r.travelers.adults; if (r.travelers.children != null) $("children").value = r.travelers.children; }
   if (r.rooms) $("rooms").value = r.rooms;
   if (r.work){ if (r.work.off_time) $("offTime").value = r.work.off_time; if (r.work.start_time) $("startTime").value = r.work.start_time; }
@@ -450,12 +599,19 @@ function fill(r){
   if ("price_min" in h) $("pMin").value = h.price_min == null ? "" : h.price_min;
   if ("price_max" in h) $("pMax").value = h.price_max == null ? "" : h.price_max;
   if (h.specific_name) $("hName").value = h.specific_name;
+  if (h.location && h.location.mode){
+    const radio = document.querySelector(`input[name=hloc][value=${h.location.mode}]`); if (radio) radio.checked = true;
+    if (h.location.max_drive_min) nearestOpt("locMin", h.location.max_drive_min);
+    if (h.location.max_km) nearestOpt("locKm", h.location.max_km);
+    if (h.location.point){ hotelPoint = h.location.point; $("ptInfo").textContent = "已选：" + hotelPoint.name; }
+    syncLoc();
+  }
   const g = r.goal || {};
   if (g.priority) document.querySelector(`input[name=goal][value=${g.priority}]`).checked = true;
   if (g.special_forces != null){ $("sf").checked = !!g.special_forces; }
   if ("budget_total" in g) $("budget").value = g.budget_total == null ? "" : g.budget_total;
   renderStations();
-  (r.stations || []).forEach(s => {
+  (window.FDS_SERVER ? [] : (r.stations || [])).forEach(s => {
     const all = [...$("stations").querySelectorAll("input[data-name]")];
     const inp = s.generic ? all.find(i => i.dataset.type === s.generic)
       : all.find(i => i.dataset.name === s.name || i.dataset.name.includes(s.name) || s.name.includes(i.dataset.name) || s.name.replace(/机场|国际|站/g, "").length > 1 && i.dataset.name.includes(s.name.replace(/机场|国际|站/g, "")));
@@ -476,7 +632,7 @@ let curJob = null, pollTimer = null;
 async function api(path, body){
   const r = await fetch(path, body === undefined ? {credentials:"same-origin"} : {method:"POST", credentials:"same-origin", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
   let d = {}; try { d = await r.json(); } catch (e) {}
-  if (r.status === 401 && d.error === "need_login"){ showLogin(); throw new Error("need_login"); }
+
   return {status: r.status, ...d};
 }
 function showLogin(){ $("login").style.display = "flex"; setTimeout(() => $("pw").focus(), 50); }
@@ -575,10 +731,10 @@ function renderPlan(plan, shareUrl, readonly){
       h += `<div class="plan"><h4>方案 ${x.rank}｜${esc(x.dest)} ${md(x.out_date)} → ${md(x.ret_date)}，${x.nights} 晚，${money(pr.total)}</h4>
         <div class="muted">去程：${esc(x.out_mode)}，${x.out.leave_home ? x.out.leave_home.slice(11) + " 出门" : ""}；回程：${esc(x.ret_mode)}，${x.ret.home_arrive ? x.ret.home_arrive.slice(5, 16) + " 到家" : ""}</div>
         ${legHtml("去程", x.out)}${legHtml("回程", x.ret)}
-        <div class="leg"><b>酒店</b> ${esc(ho.name)}｜${esc(ho.star)}｜每晚参考起价 ${money(ho.price_per_night)} × ${pr.hotel_nights} 晚 × ${pr.rooms} 间 = ${money(pr.hotel_total)} <a href="${esc(ho.url)}" target="_blank" rel="noopener">点击预订</a>
+        <div class="leg"><b>第一晚</b> ${pr.hotel_nights ? `${esc(ho.name)}｜${esc(ho.star)}｜参考起价 ${money(ho.price_per_night)} × ${pr.rooms} 间 = ${money(pr.hotel_total)}${ho.drive_min ? `｜离${esc(ho.ref)}开车约 ${ho.drive_min} 分钟` : ho.dist_km != null && ho.ref ? `｜离${esc(ho.ref)}约 ${ho.dist_km} 公里` : ""} <a href="${esc(ho.url)}" target="_blank" rel="noopener">点击预订</a>` : "凌晨落地，当晚不订酒店"}
           ${ho.pic ? `<img class="hotelpic" loading="lazy" src="${esc(ho.pic)}" alt="">` : ""}
           ${(x.hotel_alts || []).length ? `<div class="muted">备选：${x.hotel_alts.map(a => `${esc(a.name)} ${money(a.price_per_night)}/晚 <a href="${esc(a.url)}" target="_blank" rel="noopener">预订</a>`).join("｜")}</div>` : ""}</div>
-        <div class="leg"><b>总价</b> 交通 ${money(pr.transport_per_person)} × ${pr.persons} 人 + 酒店 ${money(pr.hotel_total)} = ${money(pr.total)}</div>
+        <div class="leg"><b>总价</b> 交通 ${money(pr.transport_per_person)} × ${pr.persons} 人 + 第一晚 ${money(pr.hotel_total)} = ${money(pr.total)}${x.nights > pr.hotel_nights ? `<span class="muted">（其余 ${x.nights - pr.hotel_nights} 晚自行安排，未计入）</span>` : ""}</div>
         <div class="leg"><b>时段</b> ${Object.entries(x.slots).map(([d, s]) => `${md(d)} ${s.join("、")}`).join("；")}</div>
         ${x.reason_facts ? `<div class="leg"><b>理由</b> ${reasonText(x)}</div>` : ""}
         <div class="flags">${x.flags.map(f => `<span class="flag">${esc(f)}</span>`).join("")}</div></div>`;
@@ -626,6 +782,62 @@ async function openHistory(){
     pollJob(el.dataset.id);
   });
 }
+function debounce(fn, ms){ let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+let geoSeq = 0;
+async function loadStations(loc, label){
+  const my = ++geoSeq;  // 只认最后一次请求的结果（IP 定位、城市、地址可能先后返回）
+  $("stations").innerHTML = '<div class="hint"><span class="spinner"></span>正在查找 100 公里内的机场和火车站，并计算开车时间…</div>';
+  try {
+    const d = await api("/api/geo/stations?loc=" + encodeURIComponent(loc));
+    if (my !== geoSeq) return;
+    if (!d.ok){ $("stations").innerHTML = `<div class="hint">${esc(d.message || "查找失败")}，可以稍后重选出发地，或在下方手动添加站点</div>`; $("originInfo").textContent = "附近站点查找失败"; return; }
+    geoStations = d.stations; showAllTrains = false; extraStations = [];
+    originPoint = {location: loc, name: label || d.address, address: d.address};
+    if (d.city) $("home").value = d.city;
+    $("originInfo").textContent = `出发点：${label || d.address}（${d.city}）· 找到 ${d.stations.filter(x => x.type === "air").length} 个机场、${d.stations.filter(x => x.type === "train").length} 个火车站`;
+    renderStations(); applyPendingCommute();
+  } catch (e) { $("stations").innerHTML = '<div class="hint">查找失败，可以在下方手动添加站点</div>'; }
+}
+function applyPendingCommute(){
+  if (!geoStations || !pendingCommute.length) return;
+  pendingCommute.forEach(st => {
+    const core = n => String(n || "").replace(/国际|机场|站|苏南/g, "");
+    const g = st.generic ? geoStations.find(x => x.type === st.generic && !x.removed)
+      : geoStations.find(x => x.name === st.name || core(x.name).includes(core(st.name)) || core(st.name).includes(core(x.name)));
+    if (g && st.commute_min != null){ g.commute_min = st.commute_min; g.folded = false; }
+  });
+  pendingCommute = []; renderStations();
+}
+async function geoForCity(name){
+  if (!name) return;
+  const my = ++geoSeq;
+  try {
+    const d = await api("/api/geo/city?name=" + encodeURIComponent(name));
+    if (my !== geoSeq) return;
+    if (d.ok) loadStations(d.location, d.city + "市中心"); else $("originInfo").textContent = d.message || "没找到这个城市";
+  } catch (e) {}
+}
+function tipBox(input, box, cityFn, onPick){
+  input.addEventListener("focus", () => setTimeout(() => input.scrollIntoView({behavior: "smooth", block: "center"}), 250));  // 手机键盘弹起/底部按钮栏不挡住下拉
+  input.addEventListener("input", debounce(async () => {
+    const q = input.value.trim(); if (q.length < 2){ box.style.display = "none"; return; }
+    const d = await api(`/api/geo/tips?q=${encodeURIComponent(q)}&city=${encodeURIComponent(cityFn() || "")}`);
+    const tips = (d.tips || []);
+    box.innerHTML = tips.map((t, i) => `<div data-i="${i}">${esc(t.name)}<small>${esc(t.district)}</small></div>`).join("") || '<div style="cursor:default">没有找到，换个说法试试</div>';
+    box.style.display = "block";
+    box.querySelectorAll("[data-i]").forEach(el => el.onclick = () => { const t = tips[+el.dataset.i]; box.style.display = "none"; input.value = t.name; onPick(t); });
+  }, 300));
+}
+function initGeo(){
+  const omode = () => document.querySelector('input[name=omode]:checked').value;
+  document.querySelectorAll("input[name=omode]").forEach(r => r.addEventListener("change", () => {
+    $("addrWrap").style.display = omode() === "addr" ? "block" : "none";
+    if (omode() === "city") geoForCity($("home").value.trim());
+  }));
+  $("home").addEventListener("change", () => { if (omode() === "city") geoForCity($("home").value.trim()); });
+  tipBox($("addr"), $("addrTips"), () => $("home").value.trim(), t => loadStations(t.location, t.name));
+  tipBox($("ptQ"), $("ptTips"), () => $("dest1").value.trim(), t => { hotelPoint = {name: t.name, location: t.location}; $("ptInfo").textContent = `已选：${t.name}（${t.district}）`; });
+}
 async function initServer(){
   document.body.classList.add("server");
   document.title = "弹性日期省钱规划";
@@ -635,13 +847,14 @@ async function initServer(){
     if (d.ok) renderJob(d); else showResult('<div class="warnbox">链接无效或已过期</div>');
     return;
   }
-  $("btnParse").onclick = parseNL; $("btnPlan").onclick = startPlan; $("btnLogin").onclick = login;
-  $("pw").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+  $("btnParse").onclick = parseNL; $("btnPlan").onclick = startPlan;
+  initGeo();
   $("btnHistory").onclick = openHistory; $("btnHistClose").onclick = () => $("history").style.display = "none";
-  const me = await api("/api/me");
-  if (!me.authed) showLogin();
   const m = location.hash.match(/^#job\/([0-9a-f-]+)$/);
-  if (me.authed && m){ try { const j = await api("/api/job/" + m[1]); if (j.request) fill(j.request); pollJob(m[1]); } catch (e) {} }
+  if (m){ try { const j = await api("/api/job/" + m[1]); if (j.request) fill(j.request); pollJob(m[1]); return; } catch (e) {} }
+  if (!$("home").value.trim()){
+    try { const ip = await api("/api/geo/ip"); if (ip.ok && ip.city){ $("home").value = ip.city; geoForCity(ip.city); } } catch (e) {}
+  }
 }
 if (window.FDS_SERVER) initServer();
 </script>
