@@ -223,6 +223,36 @@ class Quoter:
         fl.extend(legs_extra)
         return fl
 
+    # --- 预检：只用航班列表（每条线路每天 1 次调用、全局共享）做乐观可行性判断，不行就不再查火车
+    def precheck(self, cand, origin):
+        """返回 None 表示乐观上可行；否则返回 'no_out' / 'no_ret'。"""
+        buf = self.cfg["buffer_min"]
+        home, dest = self.req["home_city"], cand["dest"]
+        air = [s["commute_min"] for s in self.req["stations"] if s["type"] == "air"] or [self.cfg["default_commute_min"]["air"]]
+        tr = [s["commute_min"] for s in self.req["stations"] if s["type"] == "train"] or [self.cfg["default_commute_min"]["train"]]
+        hub = home if origin["kind"] == "home" else origin["city"]
+        leave_home = parse_dt(cand["out"]["leave_home_after"])
+        deadline = parse_dt(cand["ret"]["arrive_home_by"])
+        if origin["kind"] == "home":
+            out_min = leave_home + timedelta(minutes=min(air) + buf["air"])
+        else:  # 最快：通勤 + 进站 + 20 分钟车程 + 20 分钟换乘 + 安检
+            out_min = leave_home + timedelta(minutes=min(tr) + buf["train"] + 20 + 20 + buf["air"])
+        all_out = self._flights(hub, dest, d(cand["out_date"]))
+        if not all_out:
+            return "no_data"  # 接口当日无航班数据（可能偶发），不计入同类失败
+        outs = [f for f in all_out
+                if f["segments"][0]["dep"] >= out_min and (self.tr["redeye_out"] or not is_redeye(f, self.cfg))]
+        if not outs:
+            return "no_out"
+        slack = min(air) if origin["kind"] == "home" else 20 + buf["train"] + 20 + min(tr)
+        all_ret = self._flights(dest, hub, d(cand["ret_date"]))
+        if not all_ret:
+            return "no_data"
+        rets = [f for f in all_ret
+                if f["segments"][-1]["arr"] + timedelta(minutes=slack) <= deadline
+                and (self.tr["redeye_back"] or not is_redeye(f, self.cfg))]
+        return None if rets else "no_ret"
+
     # --- 去程
     def outbound(self, cand, origin):
         leave_home = parse_dt(cand["out"]["leave_home_after"])
@@ -504,15 +534,23 @@ def fetch(req, cands, client):
             pattern_skipped.append(c["id"])
             continue
         skipped0 = client.skipped
-        opts, any_out = [], False
+        opts, pre = [], []
         for o in c["origins"]:
+            why = q.precheck(c, o)
+            pre.append(why)
+            if why:
+                continue
             outs = q.outbound(c, o)
-            any_out = any_out or bool(outs)
             rets = q.inbound(c, o) if outs else []
             if outs and rets:
                 opts.append({"origin": o, "out": [_leg_out(x) for x in outs], "ret": [_leg_ret(x) for x in rets]})
+            else:
+                pre[-1] = "no_out" if not outs else "no_ret"
         hotels = q.hotels(c) if opts else []
-        status = "ok" if opts and hotels else ("no_out" if not any_out else ("no_ret" if not opts else "no_hotel"))
+        if opts:
+            status = "ok" if hotels else "no_hotel"
+        else:
+            status = "no_ret" if "no_ret" in pre else ("no_out" if "no_out" in pre else "no_data")
         if status != "ok" and client.skipped > skipped0:
             status = "budget"  # 因预算/停止未查全，不能判定为不可行
         if status == "no_out":

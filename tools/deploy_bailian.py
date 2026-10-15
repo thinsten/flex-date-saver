@@ -148,8 +148,11 @@ def ensure_skill(api, st, key, zpath, force_new_version=False):
     else:
         r = api.req("POST", "/skills", {"file_id": fid})
         sid = r["id"]
-    for _ in range(60):  # 官方实测审核约 4 分钟
+    for _ in range(60):  # 官方实测审核约 4 分钟；新版本要看版本自身的状态（latest_version 在审核中就会前移）
         info = api.req("GET", f"/skills/{sid}")
+        if force_new_version and info.get("latest_version"):
+            v = api.req("GET", f"/skills/{sid}/versions/{info['latest_version']}")
+            info = {**info, "status": v.get("status")}
         if info.get("status") == "active":
             st[key] = {"id": sid, "version": info["latest_version"], "name": info.get("name")}
             save(st)

@@ -100,7 +100,7 @@ def _leg_brief(leg):
 
 
 UNAVAILABLE_CN = {"no_out": "去程找不到满足约束的航班/衔接", "no_ret": "回程找不到能按时到家的航班/衔接",
-                  "no_hotel": "没有符合条件的酒店", "budget": "单次查询额度用完，未查完"}
+                  "no_hotel": "没有符合条件的酒店", "no_data": "当天没有查到航班数据", "budget": "单次查询额度用完，未查完"}
 
 
 def unavailable_hints(quotes, req, quotes_doc=None):
