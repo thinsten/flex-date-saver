@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>弹性日期省钱规划 · 需求单</title>
+<style>
+  :root{--bg:#f6f4ef;--card:#fff;--ink:#1f2328;--sub:#6a6f76;--line:#e4e0d8;--acc:#e8590c;--acc-soft:#fff1e6;--ok:#2f9e44;--warn:#c92a2a;--muted:#f1efe9;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+  header{padding:28px 20px 8px;max-width:880px;margin:0 auto}
+  header h1{margin:0 0 6px;font-size:24px}
+  header p{margin:0;color:var(--sub)}
+  main{max-width:880px;margin:0 auto;padding:12px 16px 120px}
+  section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 8px;margin:14px 0}
+  section h2{margin:0 0 12px;font-size:17px;display:flex;align-items:center;gap:8px}
+  section h2 .tag{background:var(--acc);color:#fff;border-radius:6px;font-size:12px;padding:1px 7px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px 16px;margin-bottom:12px}
+  label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--sub)}
+  label.f b{color:var(--ink);font-weight:600}
+  label.f b i{color:var(--warn);font-style:normal}
+  input[type=text],input[type=number],input[type=date],input[type=time],select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);width:100%}
+  input:focus,select:focus{outline:2px solid var(--acc-soft);border-color:var(--acc)}
+  .row{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin:4px 0 12px}
+  .chk{display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+  .chk input{width:16px;height:16px;accent-color:var(--acc)}
+  .hint{font-size:12px;color:var(--sub);margin:-4px 0 12px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .seg label{padding:7px 14px;cursor:pointer;border-right:1px solid var(--line);font-size:14px}
+  .seg label:last-child{border-right:0}
+  .seg input{display:none}
+  .seg input:checked+span{color:var(--acc);font-weight:600}
+  .seg label:has(input:checked){background:var(--acc-soft)}
+  .stations{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;margin-bottom:12px}
+  .st{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:9px;padding:6px 10px}
+  .st span.n{flex:1;font-size:14px}
+  .st span.t{font-size:11px;color:#fff;background:#868e96;border-radius:4px;padding:0 5px}
+  .st span.t.air{background:#1c7ed6}
+  .st input{width:70px;padding:5px 6px}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
+  .cal .h{text-align:center;font-size:12px;color:var(--sub);padding:2px 0}
+  .cal .m{grid-column:1/-1;font-weight:600;margin:8px 0 2px;font-size:13px}
+  .day{border:1px solid var(--line);border-radius:8px;padding:5px 2px;text-align:center;font-size:13px;cursor:pointer;min-height:44px;background:#fff}
+  .day small{display:block;font-size:10px;color:var(--sub);line-height:1.2}
+  .day.off{background:var(--muted);color:#adb5bd;cursor:default}
+  .day.est small{color:#e67700}
+  .day.sel{background:var(--acc);color:#fff;border-color:var(--acc)}
+  .day.sel small{color:#ffe8d6}
+  .day.blank{border:0;background:transparent;cursor:default}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+  .chip{border:1px solid var(--line);border-radius:20px;padding:4px 12px;cursor:pointer;font-size:13px;background:#fff}
+  .chip.on{background:var(--acc-soft);border-color:var(--acc);color:var(--acc)}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid var(--line);padding:12px 16px;display:flex;justify-content:center;gap:12px;z-index:5}
+  button{font:inherit;border:0;border-radius:10px;padding:11px 22px;cursor:pointer;font-weight:600}
+  .primary{background:var(--acc);color:#fff}
+  .ghost{background:var(--muted);color:var(--ink)}
+  .errs{color:var(--warn);font-size:13px;margin:6px 0 0}
+  #preview{display:none}
+  #preview pre{white-space:pre-wrap;word-break:break-all;background:#1f2328;color:#e9ecef;border-radius:10px;padding:14px;font-size:12px;max-height:360px;overflow:auto}
+  .ok{color:var(--ok);font-weight:600}
+  .disabled{opacity:.55;pointer-events:none}
+  @media (max-width:560px){header h1{font-size:20px}.grid{grid-template-columns:1fr 1fr}.seg label{padding:7px 10px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>弹性日期省钱规划 · 需求单</h1>
+  <p>点选填写你的约束，生成需求单后粘贴给智能体。大部分项已有默认值，只改需要改的。</p>
+</header>
+<main>
+<form id="f" onsubmit="return false">
+
+<section id="secA">
+  <h2><span class="tag">A</span>基础信息</h2>
+  <div class="grid">
+    <label class="f"><b>常住城市 <i>*</i></b>
+      <input type="text" id="home" list="cityList" placeholder="如：苏州"></label>
+    <label class="f"><b>目的地 1 <i>*</i></b><input type="text" id="dest1" placeholder="如：三亚"></label>
+    <label class="f"><b>目的地 2（可选，横向对比）</b><input type="text" id="dest2" placeholder="如：西双版纳"></label>
+  </div>
+  <div class="grid">
+    <label class="f"><b>时间窗口开始 <i>*</i></b><input type="date" id="wStart"></label>
+    <label class="f"><b>时间窗口结束 <i>*</i></b><input type="date" id="wEnd"></label>
+    <label class="f"><b>玩几晚（最少） <i>*</i></b><input type="number" id="nMin" min="1" max="14" value="3"></label>
+    <label class="f"><b>玩几晚（最多）</b><input type="number" id="nMax" min="1" max="14" value="3"></label>
+  </div>
+  <div class="grid">
+    <label class="f"><b>成人 <i>*</i></b><input type="number" id="adults" min="1" max="9" value="2"></label>
+    <label class="f"><b>儿童</b><input type="number" id="children" min="0" max="9" value="0"></label>
+    <label class="f"><b>房间数</b><input type="number" id="rooms" min="1" max="9" value="1"></label>
+  </div>
+  <datalist id="cityList"></datalist>
+</section>
+
+<section id="secB">
+  <h2><span class="tag">B</span>时间</h2>
+  <div class="grid">
+    <label class="f"><b>工作日下班时间</b><input type="time" id="offTime" value="18:00"></label>
+    <label class="f"><b>上班时间</b><input type="time" id="startTime" value="09:00"></label>
+    <label class="f"><b>返程最晚几点到家</b><input type="time" id="homeBy" value="23:00"></label>
+    <label class="f"><b>最多请几天假</b><input type="number" id="maxLeave" min="0" max="10" value="1"></label>
+  </div>
+  <div class="f" style="margin-bottom:6px"><b style="font-size:13px">到各机场、车站要多少分钟（从公司或家出发）</b></div>
+  <div class="stations" id="stations"><div class="hint">先填常住城市，会自动列出机场和车站。</div></div>
+  <div class="row"><input type="text" id="stName" placeholder="手动添加站点，如：昆山南站" style="max-width:220px">
+    <select id="stType" style="max-width:100px"><option value="train">火车站</option><option value="air">机场</option></select>
+    <button type="button" class="ghost" id="stAdd" style="padding:7px 14px">添加</button></div>
+  <div class="f" style="margin-bottom:6px"><b style="font-size:13px">可以请假的日期（点击勾选，灰色为周末/假期，不用请假）</b></div>
+  <div id="cal" class="hint">先选时间窗口。</div>
+</section>
+
+<section id="secC">
+  <h2><span class="tag">C</span>交通偏好</h2>
+  <div class="row">
+    <label class="chk"><input type="checkbox" id="redeyeOut">去程接受红眼（22 点后起飞或 0-6 点落地）</label>
+    <label class="chk"><input type="checkbox" id="redeyeBack">回程接受红眼</label>
+  </div>
+  <div class="row">
+    <label class="chk"><input type="checkbox" id="transferOk" checked>接受中转</label>
+    <label class="f" style="flex-direction:row;align-items:center;gap:6px">中转最长等
+      <select id="layover" style="width:auto"><option value="90">1.5 小时</option><option value="120">2 小时</option><option value="180" selected>3 小时</option><option value="240">4 小时</option><option value="360">6 小时</option></select></label>
+  </div>
+  <div class="row">
+    <label class="chk"><input type="checkbox" id="nearbyOk">接受先坐火车去附近城市出发</label>
+    <label class="f" style="flex-direction:row;align-items:center;gap:6px">火车最长
+      <select id="maxTrain" style="width:auto"><option value="30">30 分钟</option><option value="60" selected>1 小时</option><option value="90">1.5 小时</option><option value="120">2 小时</option></select></label>
+  </div>
+  <div class="chips" id="nearbyChips"></div>
+  <div class="row">
+    <label class="f" style="flex-direction:row;align-items:center;gap:6px">舱位
+      <select id="cabin" style="width:auto"><option>经济舱</option><option>公务舱</option><option>头等舱</option></select></label>
+    <span style="font-size:13px;color:var(--sub)">火车座席：</span>
+    <label class="chk"><input type="checkbox" name="seat" value="二等座" checked>二等座</label>
+    <label class="chk"><input type="checkbox" name="seat" value="一等座">一等座</label>
+    <label class="chk"><input type="checkbox" name="seat" value="商务座">商务座</label>
+  </div>
+</section>
+
+<section id="secD">
+  <h2><span class="tag">D</span>住宿</h2>
+  <div class="row"><div class="seg">
+    <label><input type="radio" name="hmode" value="filter" checked><span>按条件筛</span></label>
+    <label><input type="radio" name="hmode" value="specific"><span>指定某一家</span></label>
+  </div></div>
+  <div id="hFilter">
+    <div class="row"><span style="font-size:13px;color:var(--sub)">星级：</span>
+      <label class="chk"><input type="checkbox" name="star" value="5">五星/豪华</label>
+      <label class="chk"><input type="checkbox" name="star" value="4" checked>四星/高档</label>
+      <label class="chk"><input type="checkbox" name="star" value="3">三星/舒适</label>
+      <label class="chk"><input type="checkbox" name="star" value="2">经济型</label></div>
+    <div class="row"><span style="font-size:13px;color:var(--sub)">类型：</span>
+      <label class="chk"><input type="checkbox" name="htype" value="酒店" checked>酒店</label>
+      <label class="chk"><input type="checkbox" name="htype" value="民宿">民宿</label>
+      <label class="chk"><input type="checkbox" name="htype" value="客栈">客栈</label></div>
+    <div class="grid">
+      <label class="f"><b>连锁</b><select id="chain"><option value="any">不限</option><option value="chain_only">只要连锁品牌</option><option value="brand">指定品牌…</option></select></label>
+      <label class="f" id="brandWrap" style="display:none"><b>品牌名</b><input type="text" id="brand" placeholder="如：全季、亚朵、希尔顿"></label>
+      <label class="f"><b>区域（可选）</b><input type="text" id="area" placeholder="行政区如吉阳区，或商圈如亚龙湾"></label>
+      <label class="f"><b>每晚最低价</b><input type="number" id="pMin" min="0" placeholder="不限"></label>
+      <label class="f"><b>每晚最高价</b><input type="number" id="pMax" min="0" placeholder="不限"></label>
+    </div>
+  </div>
+  <div id="hSpecific" style="display:none"><div class="grid">
+    <label class="f"><b>酒店名称 <i>*</i></b><input type="text" id="hName" placeholder="如：三亚亚龙湾万豪度假酒店"></label>
+  </div></div>
+</section>
+
+<section id="secE">
+  <h2><span class="tag">E</span>目标</h2>
+  <div class="row"><div class="seg">
+    <label><input type="radio" name="goal" value="save"><span>省钱优先</span></label>
+    <label><input type="radio" name="goal" value="balance" checked><span>兼顾</span></label>
+    <label><input type="radio" name="goal" value="play"><span>多玩优先</span></label>
+  </div></div>
+  <div class="hint">兼顾 = 按「每个可玩时段花多少钱」排序。可玩时段：上午 8-12、下午 12-17、晚上 18-24，完整在目的地才算 1 个。</div>
+  <div class="row"><label class="chk"><input type="checkbox" id="sf">接受特种兵（红眼、末班、早班直接上班、凌晨落地那晚不订酒店）</label></div>
+  <div class="grid"><label class="f"><b>总预算上限（元，可选）</b><input type="number" id="budget" min="0" placeholder="不设上限"></label></div>
+</section>
+
+<section id="preview">
+  <h2>需求单预览 <span id="copied" class="ok"></span></h2>
+  <pre id="out"></pre>
+  <div class="hint">复制后粘贴到「弹性日期省钱规划」智能体对话框，它会先复述确认，再查真实报价。</div>
+</section>
+<div class="errs" id="errs"></div>
+</form>
+</main>
+<div class="bar">
+  <button type="button" class="ghost" id="btnGen">生成需求单</button>
+  <button type="button" class="primary" id="btnCopy">一键复制</button>
+</div>
+
+<script>
+const STATIONS = {
+  "上海": [["上海虹桥机场","air"],["上海浦东机场","air"],["上海虹桥站","train"],["上海站","train"],["上海南站","train"]],
+  "杭州": [["杭州萧山机场","air"],["杭州东站","train"],["杭州站","train"],["杭州西站","train"]],
+  "南京": [["南京禄口机场","air"],["南京南站","train"],["南京站","train"]],
+  "苏州": [["苏南硕放机场","air"],["苏州站","train"],["苏州北站","train"],["苏州园区站","train"]],
+  "北京": [["北京首都机场","air"],["北京大兴机场","air"],["北京南站","train"],["北京站","train"],["北京西站","train"]],
+  "广州": [["广州白云机场","air"],["广州南站","train"],["广州站","train"]],
+  "深圳": [["深圳宝安机场","air"],["深圳北站","train"],["福田站","train"]],
+  "成都": [["成都天府机场","air"],["成都双流机场","air"],["成都东站","train"]],
+  "武汉": [["武汉天河机场","air"],["武汉站","train"],["汉口站","train"]],
+  "西安": [["西安咸阳机场","air"],["西安北站","train"]]
+};
+const NEARBY = {"苏州":["上海","无锡"],"无锡":["上海","南京"],"常州":["南京","上海"],"嘉兴":["上海","杭州"],"绍兴":["杭州"],
+  "湖州":["杭州"],"宁波":["杭州"],"镇江":["南京"],"扬州":["南京"],"昆山":["上海"],"廊坊":["北京","天津"],"天津":["北京"],
+  "东莞":["广州","深圳"],"佛山":["广州"],"惠州":["深圳"],"珠海":["广州"]};
+// 与 config/holidays.json 保持一致；2027 年为预估
+const HOLIDAYS = [{name:"元旦",start:"2027-01-01",end:"2027-01-03",est:true},{name:"春节",start:"2027-02-04",end:"2027-02-12",est:true}];
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2,"0");
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); };
+let extraStations = [], leaveSel = new Set(), nearbySel = new Set();
+
+Object.keys(STATIONS).concat(Object.keys(NEARBY)).filter((v,i,a)=>a.indexOf(v)===i)
+  .forEach(c => { const o = document.createElement("option"); o.value = c; $("cityList").appendChild(o); });
+
+function holidayOf(s){ for (const h of HOLIDAYS) if (s >= h.start && s <= h.end) return h; return null; }
+function isWorkday(d){ const h = holidayOf(iso(d)); if (h) return false; const w = d.getDay(); return w !== 0 && w !== 6; }
+
+function renderStations(){
+  const city = $("home").value.trim(), box = $("stations");
+  const keep = {}; box.querySelectorAll("input[data-name]").forEach(i => keep[i.dataset.name] = i.value);
+  const list = (STATIONS[city] || []).concat(extraStations);
+  if (!list.length){ box.innerHTML = '<div class="hint">该城市暂无内置站点，可在下方手动添加。</div>'; return; }
+  box.innerHTML = "";
+  list.forEach(([name, type]) => {
+    const div = document.createElement("div"); div.className = "st";
+    const def = keep[name] !== undefined ? keep[name] : (type === "air" ? 60 : 30);
+    div.innerHTML = `<span class="t ${type}">${type === "air" ? "机场" : "火车"}</span><span class="n">${name}</span>
+      <input type="number" min="0" max="300" data-name="${name}" data-type="${type}" value="${def}"><span style="font-size:12px;color:var(--sub)">分钟</span>`;
+    box.appendChild(div);
+  });
+}
+function renderNearby(){
+  const city = $("home").value.trim(), box = $("nearbyChips");
+  const sug = NEARBY[city] || Object.keys(STATIONS).filter(c => c !== city).slice(0, 4);
+  [...nearbySel].forEach(c => { if (!sug.includes(c)) sug.push(c); });
+  box.innerHTML = "";
+  sug.forEach(c => {
+    const s = document.createElement("span"); s.className = "chip" + (nearbySel.has(c) ? " on" : ""); s.textContent = c;
+    s.onclick = () => { nearbySel.has(c) ? nearbySel.delete(c) : nearbySel.add(c); if (nearbySel.size) $("nearbyOk").checked = true; renderNearby(); };
+    box.appendChild(s);
+  });
+  $("nearbyChips").classList.toggle("disabled", !$("nearbyOk").checked);
+}
+function renderCal(){
+  const s = $("wStart").value, e = $("wEnd").value, box = $("cal");
+  if (!s || !e || e < s){ box.className = "hint"; box.innerHTML = "先选时间窗口。"; return; }
+  box.className = "cal"; box.innerHTML = "";
+  "一二三四五六日".split("").forEach(w => { const h = document.createElement("div"); h.className = "h"; h.textContent = w; box.appendChild(h); });
+  let d = parse(s), end = parse(e), month = -1;
+  for (const k of [...leaveSel]) if (k < s || k > e) leaveSel.delete(k);
+  while (d <= end){
+    if (d.getMonth() !== month){
+      month = d.getMonth();
+      const m = document.createElement("div"); m.className = "m"; m.textContent = `${d.getFullYear()} 年 ${month+1} 月`; box.appendChild(m);
+      const lead = (d.getDay() + 6) % 7;
+      for (let i = 0; i < lead; i++){ const b = document.createElement("div"); b.className = "day blank"; box.appendChild(b); }
+    }
+    const k = iso(d), h = holidayOf(k), work = isWorkday(d);
+    const cell = document.createElement("div");
+    cell.className = "day" + (work ? "" : " off") + (h && h.est ? " est" : "") + (leaveSel.has(k) ? " sel" : "");
+    cell.innerHTML = `${d.getDate()}<small>${h ? h.name + (h.est ? "·预估" : "") : (work ? "" : "周末")}</small>`;
+    if (work) cell.onclick = () => { leaveSel.has(k) ? leaveSel.delete(k) : leaveSel.add(k); renderCal(); };
+    box.appendChild(cell);
+    d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+  }
+}
+const redeyePrev = {};
+function syncSF(){
+  const on = $("sf").checked;
+  ["redeyeOut","redeyeBack"].forEach(id => {
+    if (on){ redeyePrev[id] = $(id).checked; $(id).checked = true; }
+    else if (id in redeyePrev){ $(id).checked = redeyePrev[id]; }
+    $(id).disabled = on; $(id).parentElement.title = on ? "特种兵模式已放开" : "";
+  });
+}
+function syncHotel(){
+  const spec = document.querySelector('input[name=hmode]:checked').value === "specific";
+  $("hFilter").style.display = spec ? "none" : ""; $("hSpecific").style.display = spec ? "" : "none";
+  $("brandWrap").style.display = $("chain").value === "brand" ? "" : "none";
+}
+const num = (id, def = null) => { const v = $(id).value; return v === "" ? def : Number(v); };
+const checked = name => [...document.querySelectorAll(`input[name=${name}]:checked`)].map(i => i.value);
+
+function build(){
+  const errs = [];
+  const home = $("home").value.trim(), dests = [$("dest1").value.trim(), $("dest2").value.trim()].filter(Boolean);
+  if (!home) errs.push("请填写常住城市（A）");
+  if (!dests.length) errs.push("请至少填写 1 个目的地（A）");
+  if (!$("wStart").value || !$("wEnd").value) errs.push("请选择时间窗口（A）");
+  else if ($("wEnd").value < $("wStart").value) errs.push("时间窗口结束日早于开始日");
+  let nMin = num("nMin"), nMax = num("nMax", nMin);
+  if (!nMin || nMin < 1) errs.push("请填写玩几晚（A）");
+  if (nMin && nMax && nMax < nMin) errs.push("最多晚数不能小于最少晚数");
+  if (!num("adults") || num("adults") < 1) errs.push("成人至少 1 位");
+  const hmode = document.querySelector('input[name=hmode]:checked').value;
+  if (hmode === "specific" && !$("hName").value.trim()) errs.push("请填写指定酒店名称（D）");
+  if ($("chain").value === "brand" && !$("brand").value.trim()) errs.push("请填写品牌名（D）");
+  const seats = checked("seat");
+  if (!seats.length) errs.push("请至少选一种火车座席（C）");
+  $("errs").innerHTML = errs.map(e => "· " + e).join("<br>");
+  if (errs.length) return null;
+  const stations = [...$("stations").querySelectorAll("input[data-name]")]
+    .map(i => ({name: i.dataset.name, type: i.dataset.type, commute_min: i.value === "" ? null : Number(i.value)}));
+  const chainV = $("chain").value;
+  return {
+    version: "1", home_city: home, destinations: dests,
+    window: {start: $("wStart").value, end: $("wEnd").value},
+    nights: {min: nMin, max: nMax || nMin},
+    travelers: {adults: num("adults"), children: num("children", 0)}, rooms: num("rooms", 1),
+    work: {off_time: $("offTime").value || "18:00", start_time: $("startTime").value || "09:00"},
+    stations,
+    leave: {allowed_dates: [...leaveSel].sort(), max_days: num("maxLeave", 0)},
+    return_home_by: $("homeBy").value || "23:00",
+    transport: {
+      redeye_out: $("redeyeOut").checked, redeye_back: $("redeyeBack").checked,
+      transfer_ok: $("transferOk").checked, max_layover_min: Number($("layover").value),
+      nearby_origin_ok: $("nearbyOk").checked && nearbySel.size > 0, nearby_cities: [...nearbySel],
+      max_train_min: Number($("maxTrain").value), cabin: $("cabin").value, train_seat: seats
+    },
+    hotel: {
+      mode: hmode, stars: checked("star").map(Number), types: checked("htype"),
+      chain: chainV === "brand" ? "brand:" + $("brand").value.trim() : chainV,
+      area: $("area").value.trim(), price_min: num("pMin"), price_max: num("pMax"),
+      specific_name: hmode === "specific" ? $("hName").value.trim() : null
+    },
+    goal: {priority: document.querySelector('input[name=goal]:checked').value, special_forces: $("sf").checked, budget_total: num("budget")}
+  };
+}
+function text(obj){ return "【规划需求单 v1】\n```json\n" + JSON.stringify(obj, null, 2) + "\n```"; }
+function gen(){
+  const obj = build(); if (!obj) return null;
+  const t = text(obj); $("out").textContent = t; $("preview").style.display = "block"; $("copied").textContent = "";
+  return t;
+}
+async function copy(){
+  const t = gen(); if (!t) return;
+  try { await navigator.clipboard.writeText(t); }
+  catch (e) { const r = document.createRange(); r.selectNodeContents($("out")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand("copy"); }
+  $("copied").textContent = "已复制，去粘贴给智能体吧";
+  $("preview").scrollIntoView({behavior: "smooth"});
+}
+
+$("home").addEventListener("input", () => { nearbySel.clear(); extraStations = []; renderStations(); renderNearby(); });
+$("wStart").addEventListener("change", renderCal); $("wEnd").addEventListener("change", renderCal);
+$("sf").addEventListener("change", syncSF);
+$("nearbyOk").addEventListener("change", renderNearby);
+$("chain").addEventListener("change", syncHotel);
+document.querySelectorAll("input[name=hmode]").forEach(r => r.addEventListener("change", syncHotel));
+$("stAdd").onclick = () => { const n = $("stName").value.trim(); if (!n) return; extraStations.push([n, $("stType").value]); $("stName").value = ""; renderStations(); };
+$("btnGen").onclick = gen; $("btnCopy").onclick = copy;
+(function init(){
+  const t = new Date(); const s = new Date(t.getFullYear(), t.getMonth(), t.getDate() + 14), e = new Date(s.getFullYear(), s.getMonth(), s.getDate() + 30);
+  $("wStart").value = iso(s); $("wEnd").value = iso(e); renderCal(); renderNearby(); syncHotel();
+})();
+</script>
+</body>
+</html>
