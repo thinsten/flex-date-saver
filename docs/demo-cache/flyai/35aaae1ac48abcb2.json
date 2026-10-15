@@ -1,0 +1,1 @@
+{"args": ["search-flight", "--origin", "三亚", "--destination", "苏州", "--dep-date", "2026-11-30", "--sort-type", "3", "--arr-hour-end", "7"], "recorded_at": "2026-10-15T10:54:34+0800", "elapsed_s": 1.12, "returncode": 0, "stdout": {"data": null, "message": "时间过滤结果为空", "status": 1, "systemMessage": null}, "stderr_tail": ""}

@@ -1,0 +1,81 @@
+{
+  "version": "1",
+  "home_city": "苏州",
+  "destinations": [
+    "三亚"
+  ],
+  "window": {
+    "start": "2026-11-15",
+    "end": "2026-12-20"
+  },
+  "nights": {
+    "min": 2,
+    "max": 3
+  },
+  "travelers": {
+    "adults": 2,
+    "children": 0
+  },
+  "rooms": 1,
+  "work": {
+    "off_time": "18:00",
+    "start_time": "09:00"
+  },
+  "stations": [
+    {
+      "name": "苏州北站",
+      "type": "train",
+      "commute_min": 30
+    },
+    {
+      "name": "上海虹桥机场",
+      "type": "air",
+      "commute_min": 90
+    },
+    {
+      "name": "上海浦东机场",
+      "type": "air",
+      "commute_min": 150
+    }
+  ],
+  "leave": {
+    "allowed_dates": [
+      "2026-11-20",
+      "2026-11-23",
+      "2026-11-30",
+      "2026-12-07"
+    ],
+    "max_days": 1
+  },
+  "return_home_by": "23:00",
+  "transport": {
+    "redeye_out": false,
+    "redeye_back": false,
+    "transfer_ok": true,
+    "max_layover_min": 180,
+    "nearby_origin_ok": true,
+    "nearby_cities": [
+      "上海"
+    ],
+    "max_train_min": 60
+  },
+  "hotel": {
+    "mode": "filter",
+    "stars": [
+      4,
+      5
+    ],
+    "types": [
+      "酒店"
+    ],
+    "chain": "any",
+    "area": "",
+    "price_min": null,
+    "price_max": 800
+  },
+  "goal": {
+    "priority": "balance",
+    "special_forces": true,
+    "budget_total": null
+  }
+}

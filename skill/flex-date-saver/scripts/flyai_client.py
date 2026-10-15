@@ -29,6 +29,8 @@ class FlyaiClient:
         self.errors = []          # [{"code", "message", "args"}]
         self.stopped = None       # 致命错误码：risk_control / key_invalid / cli_missing
         self.trial_mode = False
+        self.system_messages = set()
+        self.recorded = set()
         self._last = 0.0
 
     @staticmethod
@@ -111,6 +113,10 @@ class FlyaiClient:
             self._err("bad_response", (rec.get("stderr_tail") or "返回无法解析")[-120:], args)
             return None
         sm = body.get("systemMessage") or ""
+        if sm:
+            self.system_messages.add(sm)
+        if rec.get("recorded_at"):
+            self.recorded.add(rec["recorded_at"][:16])
         if "体验模式" in sm:
             self.trial_mode = True
             self._err("trial_mode", "飞猪接口处于体验模式（Key 未生效），报价不可作为正式结果", args)

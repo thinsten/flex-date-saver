@@ -172,29 +172,17 @@ class Quoter:
         self.seats = set(self.tr.get("train_seat") or ["二等座"])
         self.brands = load_config("chain_brands")["brands"]
         self.warnings = []
-        self.no_route = set()   # 实测无航线的 (出发, 到达)，例如苏州无机场
-        self.route_checked = set()
+        self.null_days = {}     # (出发, 到达) -> 查询无结果的日期
 
     def _items(self, args):
         data = self.c.call(args)
         return (data or {}).get("itemList") or []
 
     def _flights(self, origin, dest, day, hour_start=None, arr_hour_end=None):
-        if (origin, dest) not in self.route_checked:
-            # 每条线路首次查询先不带时段查一次：既判断有无航线，结果也能被「白天出发」候选复用
-            self.route_checked.add((origin, dest))
-            if hour_start is not None or arr_hour_end is not None:
-                self._flights(origin, dest, day)
-        if (origin, dest) in self.no_route:
-            return []
         data = self.c.call(flight_args(origin, dest, day, self.req, hour_start, arr_hour_end))
-        if data is None and not self.c.stopped and hour_start is None and arr_hour_end is None:
-            # data:null 无法区分「无航线」和「当日无结果」；常住城市无机场时后续日期也不会有，记下以节省调用
-            self.no_route.add((origin, dest))
-            msg = f"{origin}→{dest} 没有查到航班，{origin}可能没有机场或航线，已跳过其他日期的同线查询"
-            if msg not in self.warnings:
-                self.warnings.append(msg)
-            return []
+        if data is None and not self.c.stopped:
+            # 实测 data:null 是「该日该线路无结果」（如硕放→三亚并非每天有航班，三亚→上海个别日期也会空），不能推断整条线路无航班
+            self.null_days.setdefault((origin, dest), set()).add(str(day))
         out = []
         for it in (data or {}).get("itemList") or []:
             j = parse_journey(it, "flight")
@@ -440,46 +428,52 @@ def needed_queries(cand, req):
 
 
 def price_hints(client, req, cands):
-    """对每个目的地各做 1 次去程、1 次回程的日期区间查询，得到部分日期的最低价线索。"""
+    """对每个目的地各做 1 次去程、1 次回程的日期区间查询，得到部分日期的最低价线索。
+    常住城市没有航线时改用第一个邻近出发城市。"""
     hints = {}
-    home = req["home_city"]
+    hubs = [req["home_city"]] + (req["transport"]["nearby_cities"] if req["transport"]["nearby_origin_ok"] else [])
     for dest in req["destinations"]:
         ds = [c for c in cands if c["dest"] == dest]
         if not ds:
             continue
-        for direction, o, de, k in (("out", home, dest, "out_date"), ("ret", dest, home, "ret_date")):
+        for direction, k in (("out", "out_date"), ("ret", "ret_date")):
             days = sorted({c[k] for c in ds})
-            a = ["search-flight", "--origin", o, "--destination", de,
-                 "--dep-date-start", days[0], "--dep-date-end", days[-1], "--sort-type", "3"]
-            if not req["transport"]["transfer_ok"]:
-                a += ["--journey-type", "1"]
-            data = client.call(a)
-            for it in (data or {}).get("itemList") or []:
-                j = parse_journey(it, "flight")
-                if j:
-                    key = (direction, dest, str(j["segments"][0]["dep"].date()))
-                    hints[key] = min(hints.get(key, 1e9), j["price"])
+            for hub in hubs:
+                o, de = (hub, dest) if direction == "out" else (dest, hub)
+                a = ["search-flight", "--origin", o, "--destination", de,
+                     "--dep-date-start", days[0], "--dep-date-end", days[-1], "--sort-type", "3"]
+                if not req["transport"]["transfer_ok"]:
+                    a += ["--journey-type", "1"]
+                data = client.call(a)
+                items = (data or {}).get("itemList") or []
+                for it in items:
+                    j = parse_journey(it, "flight")
+                    if j:
+                        key = (direction, dest, str(j["segments"][0]["dep"].date()))
+                        hints[key] = min(hints.get(key, 1e9), j["price"])
+                if items:
+                    break
     return hints
 
 
-def select_candidates(cands, req, budget, client):
+def order_candidates(cands, req, client):
+    """按目标给候选排查询顺序；候选多时先用日期区间查询拿低价线索。"""
     goal = req["goal"]["priority"]
     total = set()
     for c in cands:
         total |= needed_queries(c, req)
-    info = {"total_candidates": len(cands), "estimated_queries": len(total), "hint_queries": 0, "truncated": False}
+    info = {"total_candidates": len(cands), "estimated_queries": len(total), "hint_queries": 0}
     hints = {}
-    if len(total) > budget:
+    if len(total) > client.max_calls - client.live_calls:
         before = client.live_calls
         hints = price_hints(client, req, cands)
         info["hint_queries"] = client.live_calls - before
-        budget -= info["hint_queries"]
 
     def est_price(c):
         o = hints.get(("out", c["dest"], c["out_date"]))
         r = hints.get(("ret", c["dest"], c["ret_date"]))
         known = [x for x in (o, r) if x is not None]
-        return sum(known) + (len(known) < 2) * 800 * (2 - len(known))
+        return sum(known) + 900 * (2 - len(known))
 
     if goal == "play":
         order = sorted(cands, key=lambda c: (-c["nights"], c["leave_days"], est_price(c), c["id"]))
@@ -487,25 +481,27 @@ def select_candidates(cands, req, budget, client):
         order = sorted(cands, key=lambda c: (c["leave_days"], est_price(c), c["nights"], c["id"]))
     else:
         order = sorted(cands, key=lambda c: (c["leave_days"], est_price(c) / max(c["nights"], 1), c["id"]))
-    chosen, keys = [], set()
-    for c in order:
-        nk = keys | needed_queries(c, req)
-        if len(nk) <= budget:
-            chosen.append(c)
-            keys = nk
-    info["selected"] = len(chosen)
-    info["truncated"] = len(chosen) < len(cands)
     info["price_hints"] = {f"{k[0]}|{k[1]}|{k[2]}": v for k, v in sorted(hints.items())}
-    return chosen, info
+    return order, info
 
 
 # ---------------------------------------------------------------- 主流程
 def fetch(req, cands, client):
+    """按顺序逐个候选查价，真实调用数用满预算为止（缓存共享，越往后越便宜）。
+    同类模式连续失败 2 次后跳过其余同类候选（例如「下班后出发」都赶不上航班）。"""
     cfg = load_config("defaults")
     q = Quoter(req, client, cfg)
-    chosen, info = select_candidates(cands, req, client.max_calls - client.live_calls, client)
-    results = []
-    for c in chosen:
+    order, info = order_candidates(cands, req, client)
+    results, not_queried, fails, pattern_skipped = [], [], {}, []
+    for c in order:
+        if client.stopped or client.live_calls >= client.max_calls:
+            not_queried.append(c["id"])
+            continue
+        pat_out, pat_ret = ("out", c["out"]["mode"]), ("ret", c["ret"]["mode"])
+        if fails.get(pat_out, 0) >= 2 or fails.get(pat_ret, 0) >= 2:
+            pattern_skipped.append(c["id"])
+            continue
+        skipped0 = client.skipped
         opts, any_out = [], False
         for o in c["origins"]:
             outs = q.outbound(c, o)
@@ -515,11 +511,25 @@ def fetch(req, cands, client):
                 opts.append({"origin": o, "out": [_leg_out(x) for x in outs], "ret": [_leg_ret(x) for x in rets]})
         hotels = q.hotels(c) if opts else []
         status = "ok" if opts and hotels else ("no_out" if not any_out else ("no_ret" if not opts else "no_hotel"))
+        if status != "ok" and client.skipped > skipped0:
+            status = "budget"  # 因预算/停止未查全，不能判定为不可行
+        if status == "no_out":
+            fails[pat_out] = fails.get(pat_out, 0) + 1
+        if status == "no_ret":
+            fails[pat_ret] = fails.get(pat_ret, 0) + 1
         results.append({**c, "status": status, "options": opts, "hotel": hotels[0] if hotels else None,
                         "hotel_alts": hotels[1:3]})
-    skipped = [c["id"] for c in cands if c not in chosen]
-    return {"meta": {**client.summary(), **{k: v for k, v in info.items()}}, "errors": client.errors,
-            "warnings": q.warnings, "quotes": results, "not_queried": skipped}
+    info["selected"] = len(results)
+    info["truncated"] = bool(not_queried or pattern_skipped)
+    info["pattern_skipped"] = len(pattern_skipped)
+    for (o, de), days in sorted(q.null_days.items()):
+        q.warnings.append(f"{o}→{de} 在 {', '.join(sorted(days))} 没有查到航班（该日无航班或接口无数据）")
+    rec = sorted(client.recorded)
+    return {"meta": {**client.summary(), **info}, "errors": client.errors,
+            "recorded_at": {"first": rec[0], "last": rec[-1]} if rec else None,
+            "system_messages": sorted(client.system_messages),
+            "warnings": q.warnings, "quotes": results, "not_queried": not_queried,
+            "pattern_skipped": pattern_skipped}
 
 
 def _leg_out(x):

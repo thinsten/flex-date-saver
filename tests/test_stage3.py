@@ -83,7 +83,7 @@ class TestStage3(unittest.TestCase):
         req = sample_req()
         cands = generate(req)[0]
         r = fetch(req, cands, FlyaiClient(self.tmp / "cache", replay=True))
-        self.assertTrue(any("苏州→三亚 没有查到航班" in w for w in r["warnings"]))
+        self.assertTrue(any(w.startswith("苏州→三亚 在") for w in r["warnings"]))
         reasons = {q["id"]: q["status"] for q in r["quotes"]}
         self.assertEqual(reasons["三亚|2026-11-20|3n|after_work|day_off"], "no_out", "苏州下班后赶不上 22 点前航班")
 
