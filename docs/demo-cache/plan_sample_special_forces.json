@@ -4,8 +4,8 @@
   "goal_cn": "兼顾",
   "replay": false,
   "recorded_at": {
-    "first": "2026-10-15T11:20",
-    "last": "2026-10-15T14:07"
+    "first": "2026-10-15T15:01",
+    "last": "2026-10-15T15:03"
   },
   "errors": [
     {
@@ -14,25 +14,25 @@
       "args": [
         "search-train",
         "--origin",
-        "上海",
-        "--destination",
         "苏州",
+        "--destination",
+        "上海",
         "--dep-date",
-        "2026-11-22",
+        "2026-11-20",
         "--sort-type",
         "6",
         "--dep-hour-start",
-        "12"
+        "15"
       ]
     }
   ],
   "warnings": [
-    "三亚→苏州 在 2026-11-22, 2026-11-23, 2026-12-07 没有查到航班（该日无航班或接口无数据）",
-    "苏州→三亚 在 2026-11-27, 2026-11-28 没有查到航班（该日无航班或接口无数据）"
+    "三亚→苏州 在 2026-11-22, 2026-11-23, 2026-11-30 没有查到航班（该日无航班或接口无数据）",
+    "苏州→三亚 在 2026-11-27 没有查到航班（该日无航班或接口无数据）"
   ],
   "meta": {
     "live_calls": 20,
-    "cache_hits": 27,
+    "cache_hits": 9,
     "skipped": 2,
     "max_calls": 20,
     "stopped": null,
@@ -40,219 +40,29 @@
     "replay": false,
     "total_candidates": 29,
     "estimated_queries": 102,
-    "hint_queries": 0,
+    "hint_queries": 2,
     "price_hints": {
-      "out|三亚|2026-11-20": 892.0,
+      "out|三亚|2026-11-19": 825.0,
+      "out|三亚|2026-11-20": 873.0,
       "out|三亚|2026-11-21": 829.0,
-      "out|三亚|2026-11-22": 839.0,
-      "out|三亚|2026-11-23": 829.0,
-      "out|三亚|2026-11-30": 874.0,
-      "out|三亚|2026-12-01": 873.0,
+      "out|三亚|2026-11-25": 873.0,
+      "out|三亚|2026-11-28": 873.0,
+      "out|三亚|2026-11-29": 825.0,
+      "out|三亚|2026-12-02": 873.0,
+      "out|三亚|2026-12-03": 873.0,
       "out|三亚|2026-12-05": 873.0,
-      "ret|三亚|2026-11-21": 599.0,
-      "ret|三亚|2026-11-22": 920.0,
-      "ret|三亚|2026-11-30": 518.0,
-      "ret|三亚|2026-12-09": 717.0
+      "ret|三亚|2026-11-28": 560.0,
+      "ret|三亚|2026-12-03": 717.0,
+      "ret|三亚|2026-12-20": 1635.0
     },
-    "selected": 8,
+    "selected": 6,
     "truncated": true,
-    "pattern_skipped": 21,
-    "evaluated_candidates": 3,
+    "pattern_skipped": 19,
+    "evaluated_candidates": 1,
     "over_budget_candidates": 0,
-    "elapsed_s": 135.0
+    "elapsed_s": 111.9
   },
   "plans": [
-    {
-      "candidate_id": "三亚|2026-12-05|2n|free_day|day_off",
-      "dest": "三亚",
-      "origin": {
-        "city": "上海",
-        "kind": "nearby"
-      },
-      "out_date": "2026-12-05",
-      "out_weekday": "周六",
-      "ret_date": "2026-12-07",
-      "ret_weekday": "周一",
-      "nights": 2,
-      "hotel_nights": 2,
-      "out_mode": "假日出发",
-      "ret_mode": "请假返程",
-      "leave_dates": [
-        "2026-12-07"
-      ],
-      "leave_days": 1,
-      "slots": {
-        "2026-12-05": [
-          "晚上"
-        ],
-        "2026-12-06": [
-          "上午",
-          "下午",
-          "晚上"
-        ]
-      },
-      "slot_count": 4,
-      "dest_arrive": "2026-12-05 16:55",
-      "dest_leave": "2026-12-07 06:00",
-      "price": {
-        "out": 967.0,
-        "ret": 439.0,
-        "transport_per_person": 1406.0,
-        "persons": 2,
-        "transport_total": 2812.0,
-        "hotel_per_night": 173.0,
-        "hotel_nights": 2,
-        "rooms": 1,
-        "hotel_total": 346.0,
-        "total": 3158.0
-      },
-      "out": {
-        "price": 967.0,
-        "flight": {
-          "kind": "flight",
-          "price": 930.0,
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F2lCebP",
-          "direct": true,
-          "layovers_min": [],
-          "segments": [
-            {
-              "no": "CZ6754",
-              "dep": "2026-12-05 12:20",
-              "arr": "2026-12-05 15:55",
-              "from": "浦东",
-              "to": "凤凰",
-              "from_full": "浦东国际机场",
-              "to_full": "凤凰国际机场",
-              "seat": "经济舱"
-            }
-          ]
-        },
-        "train": {
-          "kind": "train",
-          "price": 37.0,
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1t423t",
-          "direct": true,
-          "layovers_min": [],
-          "segments": [
-            {
-              "no": "G7313",
-              "dep": "2026-12-05 08:36",
-              "arr": "2026-12-05 09:12",
-              "from": "苏州北",
-              "to": "上海虹桥",
-              "from_full": "苏州北站",
-              "to_full": "上海虹桥站",
-              "seat": "二等座"
-            }
-          ]
-        },
-        "leave_home": "2026-12-05 07:36",
-        "dest_arrive": "2026-12-05 15:55",
-        "flags": [
-          "火车余票需自行确认",
-          "站到机场换乘约70分钟(估算)"
-        ]
-      },
-      "ret": {
-        "price": 439.0,
-        "flight": {
-          "kind": "flight",
-          "price": 400.0,
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F2Z0zwO",
-          "direct": true,
-          "layovers_min": [],
-          "segments": [
-            {
-              "no": "HO2078",
-              "dep": "2026-12-07 08:00",
-              "arr": "2026-12-07 10:50",
-              "from": "凤凰",
-              "to": "虹桥",
-              "from_full": "凤凰国际机场",
-              "to_full": "虹桥国际机场",
-              "seat": "经济舱"
-            }
-          ]
-        },
-        "train": {
-          "kind": "train",
-          "price": 39.0,
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F2ngr6F",
-          "direct": true,
-          "layovers_min": [],
-          "segments": [
-            {
-              "no": "G7012",
-              "dep": "2026-12-07 12:05",
-              "arr": "2026-12-07 12:30",
-              "from": "上海",
-              "to": "苏州",
-              "from_full": "上海站",
-              "to_full": "苏州站",
-              "seat": "二等座"
-            }
-          ]
-        },
-        "dest_leave": "2026-12-07 06:00",
-        "home_arrive": "2026-12-07 13:00",
-        "flags": [
-          "火车余票需自行确认",
-          "机场到站换乘约40分钟(估算)"
-        ]
-      },
-      "hotel": {
-        "shId": "60827863",
-        "name": "三亚原野映像商务酒店（白鹭体育馆三亚站店）",
-        "star": "高档型",
-        "price_per_night": 173.0,
-        "address": "金鸡岭路480号",
-        "near": "近三亚站",
-        "pic": "https://img.alicdn.com/imgextra/i2/6000000000686/O1CN01oc6v6f1GwEgZVkh65_!!6000000000686-0-hotel.jpg",
-        "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1d8SB9"
-      },
-      "hotel_alts": [
-        {
-          "shId": "55328581",
-          "name": "南夏凯莱悦享酒店 (三亚海棠湾林旺夜市店)",
-          "star": "高档型",
-          "price_per_night": 182.0,
-          "address": "海棠湾林旺北风情小镇商业区2号楼",
-          "near": "近海棠湾",
-          "pic": "https://img.alicdn.com/imgextra/i3/6000000000735/O1CN01Mjbwbs1HIgAcOLF85_!!6000000000735-0-hotel.jpg",
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1nvxyu"
-        },
-        {
-          "shId": "53862283",
-          "name": "三亚碧海金沙酒店",
-          "star": "高档型",
-          "price_per_night": 183.0,
-          "address": "三亚湾路195号",
-          "near": "近三亚湾",
-          "pic": "https://img.alicdn.com/imgextra/i3/6000000002068/O1CN01Xf9lhg1R9C49n0rmV_!!6000000002068-0-hotel.jpg",
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1679uT"
-        }
-      ],
-      "flags": [
-        "去程火车余票需自行确认",
-        "去程站到机场换乘约70分钟(估算)",
-        "回程火车余票需自行确认",
-        "回程机场到站换乘约40分钟(估算)",
-        "酒店为参考起价"
-      ],
-      "estimated_holiday": false,
-      "rank": 1,
-      "save_vs_max": 0.0,
-      "brief": {
-        "out": "CZ6754 12-05 12:20 浦东→凤凰 15:55",
-        "ret": "HO2078 12-07 08:00 凤凰→虹桥 10:50"
-      },
-      "reason_facts": {
-        "compare_with_rank": 2,
-        "price_diff": -532.0,
-        "slot_diff": 1,
-        "leave_diff": 0
-      }
-    },
     {
       "candidate_id": "三亚|2026-11-21|2n|free_day|day_off",
       "dest": "三亚",
@@ -299,7 +109,7 @@
         "flight": {
           "kind": "flight",
           "price": 700.0,
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3Ut7on",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F30XWuS",
           "direct": true,
           "layovers_min": [],
           "segments": [
@@ -318,7 +128,7 @@
         "train": {
           "kind": "train",
           "price": 35.0,
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F15PXYf",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F05lZYn",
           "direct": true,
           "layovers_min": [],
           "segments": [
@@ -346,7 +156,7 @@
         "flight": {
           "kind": "flight",
           "price": 400.0,
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3k3LXz",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F0B6jXb",
           "direct": true,
           "layovers_min": [],
           "segments": [
@@ -365,7 +175,7 @@
         "train": {
           "kind": "train",
           "price": 39.0,
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1qPjO7",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1NWikb",
           "direct": true,
           "layovers_min": [],
           "segments": [
@@ -396,7 +206,7 @@
         "address": "亚龙湾博后村委会新坡三组15号",
         "near": "近博后村",
         "pic": "https://img.alicdn.com/imgextra/i2/6000000003416/O1CN01uOGj5v1b6ZrT7Y4Sc_!!6000000003416-0-hotel.jpg",
-        "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F38ltCz"
+        "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F0bU7xQ"
       },
       "hotel_alts": [
         {
@@ -407,7 +217,7 @@
           "address": "三亚市吉阳区大东海榆亚路428号",
           "near": "近德贝PADI潜水俱乐部",
           "pic": "https://img.alicdn.com/imgextra/i2/6000000001325/O1CN01cnOuS01LetvMg3jGw_!!6000000001325-2-hotel.png",
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F35owJq"
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F2NQnH5"
         },
         {
           "shId": "53862283",
@@ -417,7 +227,7 @@
           "address": "三亚湾路195号",
           "near": "近三亚湾",
           "pic": "https://img.alicdn.com/imgextra/i3/6000000002068/O1CN01Xf9lhg1R9C49n0rmV_!!6000000002068-0-hotel.jpg",
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F4F2RfL"
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F4O37xY"
         }
       ],
       "flags": [
@@ -428,227 +238,33 @@
         "酒店为参考起价"
       ],
       "estimated_holiday": false,
-      "rank": 2,
-      "save_vs_max": 532.0,
+      "rank": 1,
+      "save_vs_max": 0.0,
       "brief": {
         "out": "HO1225 11-21 14:55 虹桥→凤凰 18:20",
         "ret": "HO2078 11-23 08:00 凤凰→虹桥 10:50"
-      },
-      "reason_facts": {
-        "compare_with_rank": 3,
-        "price_diff": 258.0,
-        "slot_diff": 0,
-        "leave_diff": 0
-      }
-    },
-    {
-      "candidate_id": "三亚|2026-11-28|2n|free_day|day_off",
-      "dest": "三亚",
-      "origin": {
-        "city": "上海",
-        "kind": "nearby"
-      },
-      "out_date": "2026-11-28",
-      "out_weekday": "周六",
-      "ret_date": "2026-11-30",
-      "ret_weekday": "周一",
-      "nights": 2,
-      "hotel_nights": 2,
-      "out_mode": "假日出发",
-      "ret_mode": "请假返程",
-      "leave_dates": [
-        "2026-11-30"
-      ],
-      "leave_days": 1,
-      "slots": {
-        "2026-11-29": [
-          "上午",
-          "下午",
-          "晚上"
-        ]
-      },
-      "slot_count": 3,
-      "dest_arrive": "2026-11-28 22:50",
-      "dest_leave": "2026-11-30 05:20",
-      "price": {
-        "out": 814.0,
-        "ret": 489.0,
-        "transport_per_person": 1303.0,
-        "persons": 2,
-        "transport_total": 2606.0,
-        "hotel_per_night": 139.0,
-        "hotel_nights": 2,
-        "rooms": 1,
-        "hotel_total": 278.0,
-        "total": 2884.0
-      },
-      "out": {
-        "price": 814.0,
-        "flight": {
-          "kind": "flight",
-          "price": 779.0,
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3EwIIH",
-          "direct": true,
-          "layovers_min": [],
-          "segments": [
-            {
-              "no": "9C8801",
-              "dep": "2026-11-28 18:05",
-              "arr": "2026-11-28 21:50",
-              "from": "浦东",
-              "to": "凤凰",
-              "from_full": "浦东国际机场",
-              "to_full": "凤凰国际机场",
-              "seat": "经济舱"
-            }
-          ]
-        },
-        "train": {
-          "kind": "train",
-          "price": 35.0,
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F15b3PL",
-          "direct": true,
-          "layovers_min": [],
-          "segments": [
-            {
-              "no": "C3028",
-              "dep": "2026-11-28 11:15",
-              "arr": "2026-11-28 11:41",
-              "from": "苏州南",
-              "to": "上海南",
-              "from_full": "苏州南站",
-              "to_full": "上海南站",
-              "seat": "二等座"
-            }
-          ]
-        },
-        "leave_home": "2026-11-28 10:15",
-        "dest_arrive": "2026-11-28 21:50",
-        "flags": [
-          "火车余票需自行确认",
-          "站到机场换乘约70分钟(估算)"
-        ]
-      },
-      "ret": {
-        "price": 489.0,
-        "flight": {
-          "kind": "flight",
-          "price": 450.0,
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3Y5Egb",
-          "direct": true,
-          "layovers_min": [],
-          "segments": [
-            {
-              "no": "HU7321",
-              "dep": "2026-11-30 07:20",
-              "arr": "2026-11-30 10:30",
-              "from": "凤凰",
-              "to": "浦东",
-              "from_full": "凤凰国际机场",
-              "to_full": "浦东国际机场",
-              "seat": "经济舱"
-            }
-          ]
-        },
-        "train": {
-          "kind": "train",
-          "price": 39.0,
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3P3TZd",
-          "direct": true,
-          "layovers_min": [],
-          "segments": [
-            {
-              "no": "G7768",
-              "dep": "2026-11-30 12:10",
-              "arr": "2026-11-30 12:35",
-              "from": "上海",
-              "to": "苏州",
-              "from_full": "上海站",
-              "to_full": "苏州站",
-              "seat": "二等座"
-            }
-          ]
-        },
-        "dest_leave": "2026-11-30 05:20",
-        "home_arrive": "2026-11-30 13:05",
-        "flags": [
-          "火车余票需自行确认",
-          "机场到站换乘约70分钟(估算)"
-        ]
-      },
-      "hotel": {
-        "shId": "60322002",
-        "name": "莫言莫语设计师酒店(三亚亚龙湾博后店)",
-        "star": "高档型",
-        "price_per_night": 139.0,
-        "address": "亚龙湾博后村委会新坡三组15号",
-        "near": "近博后村",
-        "pic": "https://img.alicdn.com/imgextra/i2/6000000003416/O1CN01uOGj5v1b6ZrT7Y4Sc_!!6000000003416-0-hotel.jpg",
-        "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F0f70hK"
-      },
-      "hotel_alts": [
-        {
-          "shId": "56046347",
-          "name": "三亚凯瑞莱海景度假酒店(大东海店)",
-          "star": "高档型",
-          "price_per_night": 148.0,
-          "address": "三亚市吉阳区大东海榆亚路428号",
-          "near": "近德贝PADI潜水俱乐部",
-          "pic": "https://img.alicdn.com/imgextra/i2/6000000001325/O1CN01cnOuS01LetvMg3jGw_!!6000000001325-2-hotel.png",
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F40HdYG"
-        },
-        {
-          "shId": "53862283",
-          "name": "三亚碧海金沙酒店",
-          "star": "高档型",
-          "price_per_night": 152.0,
-          "address": "三亚湾路195号",
-          "near": "近三亚湾",
-          "pic": "https://img.alicdn.com/imgextra/i3/6000000002068/O1CN01Xf9lhg1R9C49n0rmV_!!6000000002068-0-hotel.jpg",
-          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F4gDlLc"
-        }
-      ],
-      "flags": [
-        "去程火车余票需自行确认",
-        "去程站到机场换乘约70分钟(估算)",
-        "回程火车余票需自行确认",
-        "回程机场到站换乘约70分钟(估算)",
-        "酒店为参考起价"
-      ],
-      "estimated_holiday": false,
-      "rank": 3,
-      "save_vs_max": 274.0,
-      "brief": {
-        "out": "9C8801 11-28 18:05 浦东→凤凰 21:50",
-        "ret": "HU7321 11-30 07:20 凤凰→浦东 10:30"
-      },
-      "reason_facts": {
-        "compare_with_rank": 2,
-        "price_diff": -258.0,
-        "slot_diff": 0,
-        "leave_diff": 0
       }
     }
   ],
   "per_destination_best": {},
   "unavailable": [
     {
-      "candidate_id": "三亚|2026-11-27|3n|after_work|straight_to_work",
-      "status": "no_out",
-      "reason": "去程找不到满足约束的航班/衔接"
-    },
-    {
       "candidate_id": "三亚|2026-11-20|3n|after_work|straight_to_work",
       "status": "no_out",
       "reason": "去程找不到满足约束的航班/衔接"
     },
     {
-      "candidate_id": "三亚|2026-11-28|2n|free_day|straight_to_work",
+      "candidate_id": "三亚|2026-11-27|3n|after_work|straight_to_work",
+      "status": "no_out",
+      "reason": "去程找不到满足约束的航班/衔接"
+    },
+    {
+      "candidate_id": "三亚|2026-11-21|2n|free_day|straight_to_work",
       "status": "no_ret",
       "reason": "回程找不到能按时到家的航班/衔接"
     },
     {
-      "candidate_id": "三亚|2026-11-21|2n|free_day|straight_to_work",
+      "candidate_id": "三亚|2026-11-28|2n|free_day|straight_to_work",
       "status": "no_ret",
       "reason": "回程找不到能按时到家的航班/衔接"
     },
@@ -660,10 +276,16 @@
   ],
   "unavailable_hints": [
     "部分返程按当前「最晚到家时间」赶不上，放宽到家时间或接受回程红眼可增加选择",
-    "同类出发/返程方式连续两次无结果，已跳过其余 21 个同类日期组合以节省查询"
+    "同类出发/返程方式连续两次无结果，已跳过其余 19 个同类日期组合以节省查询",
+    "为控制查询量（单次 ≤20 次），另有 4 个日期组合未查询；缩小时间窗口或固定晚数可覆盖更全"
   ],
   "min_feasible_total": 2626.0,
-  "not_queried": [],
+  "not_queried": [
+    "三亚|2026-11-28|2n|free_day|day_off",
+    "三亚|2026-12-05|2n|free_day|day_off",
+    "三亚|2026-11-22|2n|free_day|straight_to_work",
+    "三亚|2026-12-06|2n|free_day|straight_to_work"
+  ],
   "notes": [
     "价格以飞猪预订页为准；酒店为每晚参考起价；火车余票需自行确认"
   ],
