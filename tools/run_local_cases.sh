@@ -2,7 +2,7 @@
 # 本机真实查价跑三个场景（限流器保证 QPS≤2、每分钟≤12），场景之间再冷却 10 分钟观察长窗口风控
 cd "$(dirname "$0")/../skill/flex-date-saver"
 export FDS_TODAY=$(date +%F)
-echo "--- 先冷却 12 分钟（14:47 压测触发过风控） $(date +%T)"; sleep 720
+echo "--- 先冷却 3 分钟 $(date +%T)"; sleep 180
 for s in sample_special_forces sample_two_dest case_spring_festival; do
   echo "=== $s $(date +%T)"
   python3 scripts/run_plan.py --request ../../tests/requests/$s.json --out ../../docs/demo-cache/plan_$s.json \

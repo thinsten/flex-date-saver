@@ -596,7 +596,8 @@ def main():
     cfg = load_config("defaults")
     client = FlyaiClient(a.cache_dir, max_calls=cfg["limits"]["max_calls"],
                          min_interval_s=cfg["limits"]["min_interval_s"], replay=a.replay,
-                         rate_rules=cfg["limits"].get("rate_rules", [[2, 1.2], [12, 60]]))
+                         rate_rules=cfg["limits"]["rate_rules"], gap_s=cfg["limits"]["gap_s"],
+                         cooldown_s=cfg["limits"]["cooldown_s"], cache_ttl_s=cfg["limits"]["cache_ttl_s"])
     res = fetch(req, cands, client)
     write_json(a.out, res)
     m = res["meta"]

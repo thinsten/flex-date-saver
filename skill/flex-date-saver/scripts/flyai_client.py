@@ -15,47 +15,84 @@ class FlyaiError(Exception):
 
 
 class RateLimiter:
-    """跨进程多窗口滑动限流：对每条规则 (max_calls, window_s)，任意 window_s 秒内最多 max_calls 次请求。
-    - QPS：飞猪技术确认 QPS 2；一次 flyai-cli 调用只发 1 个 HTTP 请求（--debug 实测）→ (2, 1.2) 留 20% 余量
-    - 风控：实测在 QPS 合规（任意 1 秒 ≤2 次、平均 1.5 QPS）的情况下，连续第 24 次左右仍会触发
-      「Abnormal access behavior detected by risk control」(HTTP 451)，说明另有分钟级规则 → (12, 60) 保守兜底
-    同一台机器上的多个进程共享时间戳文件，合计不超限。"""
+    """跨进程限流 + 随机节奏 + 风控熔断。
 
-    def __init__(self, rules=((2, 1.2), (12, 60)), path=None):
+    飞猪说明：QPS 上限 2；此外安全侧按「行为」风控，某一时间段频繁、规律的调用会被判为疑似脚本（HTTP 451）。
+    实测 QPS 合规但 17 秒内连续 24 次仍被封。因此本限流器的目标是「像一个人在查」而不是「卡着上限跑」：
+    - 硬上限：任意 1.2 秒 ≤2 次（QPS2 余量 20%）、60 秒 ≤10 次、10 分钟 ≤40 次
+    - 平滑：两次请求之间随机间隔 min_gap~max_gap 秒（不规律、无突发，不会先连发再停）
+    - 熔断：任一进程遇到风控，写入 10 分钟冷却期；冷却期内所有进程直接跳过，不再继续请求加重封控
+    多个进程（本机或同一沙箱内多次规划）共享同一个状态文件。"""
+
+    def __init__(self, rules=((2, 1.2), (10, 60), (40, 600)), min_gap=3.0, max_gap=7.0, cooldown_s=600, path=None):
+        import random
+        self.rand = random.Random()
         self.rules = [tuple(r) for r in rules]
         self.keep = max(w for _, w in self.rules)
+        self.min_gap, self.max_gap, self.cooldown_s = min_gap, max_gap, cooldown_s
         self.path = Path(path or os.environ.get("FDS_RATE_FILE", "/tmp/flex-date-saver-flyai-rate.json"))
 
-    def acquire(self):
+    def _locked(self, fn):
         import fcntl
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        while True:
-            with open(self.path, "a+") as f:
-                fcntl.flock(f, fcntl.LOCK_EX)
+        with open(self.path, "a+") as f:
+            fcntl.flock(f, fcntl.LOCK_EX)
+            f.seek(0)
+            try:
+                st = json.loads(f.read() or "{}")
+            except json.JSONDecodeError:
+                st = {}
+            if isinstance(st, list):
+                st = {"ts": st}
+            out, changed = fn(st)
+            if changed:
                 f.seek(0)
-                try:
-                    ts = json.loads(f.read() or "[]")
-                except json.JSONDecodeError:
-                    ts = []
+                f.truncate()
+                f.write(json.dumps(st))
+            return out
+
+    def blocked_until(self):
+        return self._locked(lambda st: (st.get("blocked_until", 0), False))
+
+    def block(self):
+        def fn(st):
+            st["blocked_until"] = time.time() + self.cooldown_s
+            return None, True
+        self._locked(fn)
+
+    def acquire(self):
+        """拿到许可返回 True；处于风控冷却期返回 False（调用方应跳过）。"""
+        while True:
+            def fn(st):
                 now = time.time()
-                ts = sorted(t for t in ts if now - t < self.keep)
+                if st.get("blocked_until", 0) > now:
+                    return ("blocked", 0), False
+                ts = sorted(t for t in st.get("ts", []) if now - t < self.keep)
                 wait = 0.0
+                if ts:
+                    gap = st.get("next_gap", self.min_gap)
+                    wait = max(wait, gap - (now - ts[-1]))
                 for mx, w in self.rules:
                     inw = [t for t in ts if now - t < w]
                     if len(inw) >= mx:
-                        wait = max(wait, w - (now - inw[-mx]) + 0.01)
-                if wait <= 0:
-                    ts.append(now)
-                    f.seek(0)
-                    f.truncate()
-                    f.write(json.dumps(ts))
-                    return
-            time.sleep(wait)
+                        wait = max(wait, w - (now - inw[-mx]) + self.rand.uniform(0.5, 2.0))
+                if wait > 0:
+                    return ("wait", wait), False
+                ts.append(now)
+                st["ts"] = ts
+                st["next_gap"] = round(self.rand.uniform(self.min_gap, self.max_gap), 2)
+                return ("ok", 0), True
+            kind, wait = self._locked(fn)
+            if kind == "ok":
+                return True
+            if kind == "blocked":
+                return False
+            time.sleep(min(wait, 30))
 
 
 class FlyaiClient:
     def __init__(self, cache_dir, max_calls=30, min_interval_s=0.0, replay=False, flyai_bin=None, timeout=90,
-                 rate_rules=((2, 1.2), (12, 60))):
+                 rate_rules=((2, 1.2), (10, 60), (40, 600)), gap_s=(3.0, 7.0), cooldown_s=600, cache_ttl_s=1800):
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.max_calls = max_calls
@@ -72,7 +109,8 @@ class FlyaiClient:
         self.system_messages = set()
         self.recorded = set()
         self._last = 0.0
-        self.limiter = RateLimiter(rate_rules)
+        self.limiter = RateLimiter(rate_rules, gap_s[0], gap_s[1], cooldown_s)
+        self.cache_ttl_s = cache_ttl_s  # 实时模式下 30 分钟内的同一查询直接用缓存，减少重复调用；回放模式不看时效
 
     @staticmethod
     def key(args):
@@ -86,9 +124,11 @@ class FlyaiClient:
         """返回 data dict（含 itemList）或 None（无结果 / 未执行）。永不抛异常。"""
         path = self.cache_dir / f"{self.key(args)}.json"
         if path.exists():
-            self.cache_hits += 1
             rec = json.loads(path.read_text(encoding="utf-8"))
-            return self._extract(rec, args, from_cache=True)
+            fresh = self.replay or (time.time() - path.stat().st_mtime) < self.cache_ttl_s
+            if fresh:
+                self.cache_hits += 1
+                return self._extract(rec, args, from_cache=True)
         if self.replay:
             self.skipped += 1
             self._err("replay_miss", "回放模式下缓存未命中，跳过该查询", args)
@@ -106,7 +146,10 @@ class FlyaiClient:
             wait = self.min_interval_s - (time.time() - self._last)
             if wait > 0:
                 time.sleep(wait)
-            self.limiter.acquire()  # 每次真实请求（含重试）都先拿令牌：QPS ≤ 2，且每分钟 ≤ 12
+            if not self.limiter.acquire():  # 每次真实请求（含重试）都先拿许可；风控冷却期内直接停止
+                self.stopped = "risk_control"
+                self._err("risk_control", "飞猪接口处于风控冷却期（约 10 分钟），已暂停查询，请稍后重试", args)
+                return None
             t0 = time.time()
             try:
                 p = subprocess.run([self.bin, *args], capture_output=True, text=True, timeout=self.timeout)
@@ -127,6 +170,7 @@ class FlyaiClient:
                 time.sleep(1.5 * (attempt + 1))
                 continue
             if "risk control" in err:
+                self.limiter.block()  # 通知其他进程一起冷却，避免继续请求加重封控
                 self.stopped = "risk_control"
                 self._err("risk_control", "飞猪接口触发风控（短时间调用过多），已停止后续查询，请稍后重试", args)
                 return None
