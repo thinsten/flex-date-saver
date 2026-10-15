@@ -1,0 +1,10 @@
+{
+  "coverage": {"start": "2026-10-15", "end": "2027-02-28"},
+  "holidays": [
+    {"name": "元旦", "start": "2027-01-01", "end": "2027-01-03", "estimated": true},
+    {"name": "春节", "start": "2027-02-04", "end": "2027-02-12", "estimated": true}
+  ],
+  "makeup_workdays": [],
+  "makeup_estimated": true,
+  "note": "2026 年国庆后至年底无法定假日；2027 年元旦、春节为预估，调休补班日未公布，暂按无补班计算，以国务院公布为准。覆盖范围外的日期按普通周末/工作日计算。"
+}

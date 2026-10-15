@@ -1,0 +1,27 @@
+{
+  "work": {"off_time": "18:00", "start_time": "09:00"},
+  "return_home_by": "23:00",
+  "day_off_leave_home": "07:00",
+  "default_commute_min": {"air": 60, "train": 30},
+  "buffer_min": {"air": 90, "train": 30},
+  "arrive_to_hotel_min": {"air": 60, "train": 40},
+  "leave_before_dep_min": {"air": 120, "train": 60},
+  "transport": {
+    "redeye_out": false, "redeye_back": false,
+    "transfer_ok": true, "max_layover_min": 180,
+    "nearby_origin_ok": false, "nearby_cities": [], "max_train_min": 60,
+    "cabin": "经济舱", "train_seat": ["二等座"]
+  },
+  "hotel": {
+    "mode": "filter", "stars": [4], "types": ["酒店"], "chain": "any",
+    "area": "", "price_min": null, "price_max": null, "specific_name": null
+  },
+  "goal": {"priority": "balance", "special_forces": false, "budget_total": null},
+  "redeye": {"dep_from": "22:00", "arr_from": "00:00", "arr_to": "06:00"},
+  "special_forces": {"no_hotel_if_arrive_after": "02:00", "late_return_until": "02:00"},
+  "slots": {"上午": ["08:00", "12:00"], "下午": ["12:00", "17:00"], "晚上": ["18:00", "24:00"]},
+  "limits": {
+    "max_destinations": 2, "max_window_days": 62, "max_nights": 14,
+    "max_calls": 30, "min_interval_s": 1.5, "max_query_candidates": 6
+  }
+}
