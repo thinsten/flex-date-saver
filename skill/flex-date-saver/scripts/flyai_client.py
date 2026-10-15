@@ -14,8 +14,48 @@ class FlyaiError(Exception):
     pass
 
 
+class RateLimiter:
+    """跨进程多窗口滑动限流：对每条规则 (max_calls, window_s)，任意 window_s 秒内最多 max_calls 次请求。
+    - QPS：飞猪技术确认 QPS 2；一次 flyai-cli 调用只发 1 个 HTTP 请求（--debug 实测）→ (2, 1.2) 留 20% 余量
+    - 风控：实测在 QPS 合规（任意 1 秒 ≤2 次、平均 1.5 QPS）的情况下，连续第 24 次左右仍会触发
+      「Abnormal access behavior detected by risk control」(HTTP 451)，说明另有分钟级规则 → (12, 60) 保守兜底
+    同一台机器上的多个进程共享时间戳文件，合计不超限。"""
+
+    def __init__(self, rules=((2, 1.2), (12, 60)), path=None):
+        self.rules = [tuple(r) for r in rules]
+        self.keep = max(w for _, w in self.rules)
+        self.path = Path(path or os.environ.get("FDS_RATE_FILE", "/tmp/flex-date-saver-flyai-rate.json"))
+
+    def acquire(self):
+        import fcntl
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        while True:
+            with open(self.path, "a+") as f:
+                fcntl.flock(f, fcntl.LOCK_EX)
+                f.seek(0)
+                try:
+                    ts = json.loads(f.read() or "[]")
+                except json.JSONDecodeError:
+                    ts = []
+                now = time.time()
+                ts = sorted(t for t in ts if now - t < self.keep)
+                wait = 0.0
+                for mx, w in self.rules:
+                    inw = [t for t in ts if now - t < w]
+                    if len(inw) >= mx:
+                        wait = max(wait, w - (now - inw[-mx]) + 0.01)
+                if wait <= 0:
+                    ts.append(now)
+                    f.seek(0)
+                    f.truncate()
+                    f.write(json.dumps(ts))
+                    return
+            time.sleep(wait)
+
+
 class FlyaiClient:
-    def __init__(self, cache_dir, max_calls=30, min_interval_s=1.5, replay=False, flyai_bin=None, timeout=90):
+    def __init__(self, cache_dir, max_calls=30, min_interval_s=0.0, replay=False, flyai_bin=None, timeout=90,
+                 rate_rules=((2, 1.2), (12, 60))):
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.max_calls = max_calls
@@ -32,6 +72,7 @@ class FlyaiClient:
         self.system_messages = set()
         self.recorded = set()
         self._last = 0.0
+        self.limiter = RateLimiter(rate_rules)
 
     @staticmethod
     def key(args):
@@ -65,6 +106,7 @@ class FlyaiClient:
             wait = self.min_interval_s - (time.time() - self._last)
             if wait > 0:
                 time.sleep(wait)
+            self.limiter.acquire()  # 每次真实请求（含重试）都先拿令牌：QPS ≤ 2，且每分钟 ≤ 12
             t0 = time.time()
             try:
                 p = subprocess.run([self.bin, *args], capture_output=True, text=True, timeout=self.timeout)
@@ -82,7 +124,7 @@ class FlyaiClient:
             self.live_calls += 1
             err = p.stderr
             if "Rate limit" in err:
-                time.sleep(3 * (attempt + 1))
+                time.sleep(1.5 * (attempt + 1))
                 continue
             if "risk control" in err:
                 self.stopped = "risk_control"
