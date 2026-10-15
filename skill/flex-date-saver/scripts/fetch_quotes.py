@@ -127,12 +127,12 @@ def train_args(origin, dest, day, hour_start=None):
     return a
 
 
-def hotel_args(dest, ci, co, req):
+def hotel_args(dest, ci, co, req, sort="price_asc"):
     h = req["hotel"]
     area = (h.get("area") or "").strip()
     dest_name = f"{dest}{area}" if area and re.search(r"(区|县|市)$", area) else dest
     a = ["search-hotel", "--dest-name", dest_name, "--check-in-date", str(ci), "--check-out-date", str(co),
-         "--sort", "price_asc"]
+         "--sort", sort]
     if h.get("mode") == "specific" and h.get("specific_name"):
         a += ["--key-words", h["specific_name"]]
         return a
@@ -403,7 +403,16 @@ class Quoter:
     # --- 酒店
     def hotels(self, cand):
         h = self.req["hotel"]
-        items = self._items(hotel_args(cand["dest"], cand["out_date"], cand["ret_date"], self.req))
+        out = self._hotel_filter(self._items(hotel_args(cand["dest"], cand["out_date"], cand["ret_date"], self.req)))
+        if not out and h.get("price_min") and h.get("mode") != "specific":
+            # 接口没有价格下限参数，按价格升序只回最便宜的约 10 家（北京常见十几二十元的旅舍），
+            # 设了下限时全被滤掉 → 改按价格降序再查一次（上限内最贵的一批），取其中满足下限的最便宜者
+            out = self._hotel_filter(self._items(hotel_args(cand["dest"], cand["out_date"], cand["ret_date"], self.req,
+                                                            sort="price_desc")))
+        return self._hotel_area(out, cand)
+
+    def _hotel_filter(self, items):
+        h = self.req["hotel"]
         out = []
         for it in items:
             p = _f(it.get("price"))
@@ -429,6 +438,10 @@ class Quoter:
             out.append({"shId": it.get("shId"), "name": name, "star": (it.get("star") or "").strip(),
                         "price_per_night": p, "address": it.get("address"), "near": it.get("interestsPoi"),
                         "pic": it.get("mainPic"), "url": it.get("detailUrl")})
+        return out
+
+    def _hotel_area(self, out, cand):
+        h = self.req["hotel"]
         area = (h.get("area") or "").strip()
         if area and not re.search(r"(区|县|市)$", area) and h.get("mode") != "specific":
             hit = [x for x in out if area in (x["name"] or "") + (x["address"] or "") + (x["near"] or "")]
