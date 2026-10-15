@@ -55,8 +55,8 @@ flowchart LR
 
 ## 部署到百炼 Managed Agent
 
-1. **运行环境**：预装 npm 包 `@fly-ai/flyai-cli@1.0.16`，网络策略 `unrestricted`（只能通过 API 设置，见 `tools/deploy_bailian.py`）。
-2. **Skill**：把 `skill/flex-date-saver/` 和飞猪官方 Skill 分别打成 zip（根目录是 SKILL.md）上传，审核通过后挂载到智能体。
+1. **运行环境**：预装 npm 包 `@fly-ai/flyai-cli@1.0.16`，网络策略 `unrestricted`（只能通过 API 设置，见 `tools/deploy_bailian.py`，一条命令完成打包上传、建环境、建智能体和冒烟测试；`tools/session_events.py` 可远程查看会话里的工具调用与回复）。
+2. **Skill**：把 `skill/flex-date-saver/` 打成 zip（根目录是 SKILL.md）上传，审核通过后挂载；飞猪 Skill 直接挂百炼官方上架的 `flyai`（同名自建会被拒）。
 3. **系统提示词**：`prompts/system_prompt.md`，把 `{{FORM_URL}}` 换成表单页地址。
 4. **飞猪 Key**：用会话环境变量 `FLYAI_API_KEY`，**不要用密钥库**（实测会 401）。Key 读不到时 CLI 会静默进入「体验模式」，结果里出现这几个字就说明没生效。
 

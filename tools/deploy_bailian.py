@@ -128,14 +128,23 @@ def build_flyai_skill_zip():
 
 
 def ensure_skill(api, st, key, zpath, force_new_version=False):
+    if key in st and not force_new_version:
+        return st[key]
     f = api.upload(zpath)
     fid = f["id"]
     print(f"  上传 {zpath.name} → {fid}（{f.get('status')}）")
+    # 文件本身也要过审：status 从 checking 变为可用后才能用来创建 Skill（否则 409 SKILL_FILE_NOT_FOUND）
+    for _ in range(60):
+        fs = api.req("GET", f"/files/{fid}").get("status")
+        if fs not in ("checking", "processing", "uploading", None):
+            break
+        time.sleep(5)
+    print(f"  文件审核结果：{fs}")
+    if fs in ("rejected", "failed", "error"):
+        raise SystemExit(f"文件审核未通过：{fs}")
     if key in st and force_new_version:
         r = api.req("POST", f"/skills/{st[key]['id']}/versions", {"file_id": fid})
         sid = st[key]["id"]
-    elif key in st:
-        return st[key]
     else:
         r = api.req("POST", "/skills", {"file_id": fid})
         sid = r["id"]
@@ -150,6 +159,25 @@ def ensure_skill(api, st, key, zpath, force_new_version=False):
             raise SystemExit(f"Skill 审核未通过：{json.dumps(info, ensure_ascii=False)[:600]}")
         time.sleep(10)
     raise SystemExit("Skill 审核超时（10 分钟），稍后用同样命令重试")
+
+
+def official_flyai(api, st):
+    """百炼已上架官方 flyai Skill（同名自建会 409「已存在官方相同SkillName」），直接挂官方版。"""
+    if "skill_flyai" in st:
+        return st["skill_flyai"]
+    page = None
+    for _ in range(10):
+        d = api.req("GET", "/skills?source=official&limit=100" + (f"&page={page}" if page else ""))
+        for x in d.get("data", []):
+            if x.get("name") == "flyai" and x.get("id", "").startswith("skill_") and x.get("status") == "active":
+                st["skill_flyai"] = {"id": x["id"], "version": x["latest_version"], "name": "flyai", "type": "official"}
+                save(st)
+                print(f"  使用百炼官方 flyai Skill：{x['id']}@{x['latest_version']}")
+                return st["skill_flyai"]
+        page = d.get("next_page")
+        if not page:
+            break
+    raise SystemExit("没有找到百炼官方 flyai Skill")
 
 
 def ensure_env(api, st):
@@ -173,10 +201,12 @@ def ensure_agent(api, st, model, form_url, skills):
         "name": "flex-date-saver", "model": {"id": model}, "system": system,
         "tools": [{"type": "builtin_toolkit", "default_config": {"enabled": True},
                    "configs": [{"name": n, "enabled": True} for n in ("bash", "read", "write", "edit", "glob", "grep")]}],
-        "skills": [{"type": "customer", "skill_id": s["id"], "version": s["version"]} for s in skills],
+        "skills": [{"type": s.get("type", "customer"), "skill_id": s["id"], "version": s["version"]} for s in skills],
     }
     if "agent" in st:
-        r = api.req("POST", f"/agents/{st['agent']['id']}", body)  # 更新
+        cur = api.req("GET", f"/agents/{st['agent']['id']}")
+        body["version"] = cur.get("version")  # 更新需带当前版本号（乐观锁），成功后版本 +1
+        r = api.req("POST", f"/agents/{st['agent']['id']}", body)
     else:
         r = api.req("POST", "/agents", body)
     st["agent"] = {"id": r["id"], "version": r.get("version")}
@@ -230,7 +260,7 @@ def main():
     if a.only in (None, "skills"):
         print("2/4 上传 Skill 并等待审核")
         s1 = ensure_skill(api, st, "skill_own", own, a.new_version)
-        s2 = ensure_skill(api, st, "skill_flyai", fz, a.new_version)
+        s2 = official_flyai(api, st)
     else:
         s1, s2 = st["skill_own"], st["skill_flyai"]
     if a.only in (None, "env"):
