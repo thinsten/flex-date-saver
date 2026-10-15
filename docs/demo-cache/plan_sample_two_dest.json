@@ -3,88 +3,588 @@
   "goal": "play",
   "goal_cn": "多玩优先",
   "replay": false,
-  "recorded_at": null,
+  "recorded_at": {
+    "first": "2026-10-15T15:13",
+    "last": "2026-10-15T15:14"
+  },
   "errors": [
     {
-      "code": "risk_control",
-      "message": "飞猪接口触发风控（短时间调用过多），已停止后续查询，请稍后重试",
+      "code": "budget_exceeded",
+      "message": "已达单次规划调用上限 20 次，其余查询跳过",
       "args": [
-        "search-flight",
-        "--origin",
-        "上海",
-        "--destination",
+        "search-hotel",
+        "--dest-name",
         "三亚",
-        "--dep-date-start",
-        "2026-11-19",
-        "--dep-date-end",
-        "2026-12-11",
-        "--sort-type",
-        "3",
-        "--journey-type",
-        "1"
+        "--check-in-date",
+        "2026-12-05",
+        "--check-out-date",
+        "2026-12-07",
+        "--sort",
+        "price_asc",
+        "--hotel-stars",
+        "4,5",
+        "--hotel-types",
+        "酒店",
+        "--max-price",
+        "900"
       ]
     }
   ],
-  "warnings": [],
+  "warnings": [
+    "三亚→上海 在 2026-11-23, 2026-12-06 没有查到航班（该日无航班或接口无数据）"
+  ],
   "meta": {
-    "live_calls": 1,
-    "cache_hits": 0,
-    "skipped": 3,
-    "max_calls": 30,
-    "stopped": "risk_control",
+    "live_calls": 20,
+    "cache_hits": 9,
+    "skipped": 1,
+    "max_calls": 20,
+    "stopped": null,
     "trial_mode": false,
     "replay": false,
     "total_candidates": 28,
     "estimated_queries": 60,
-    "hint_queries": 1,
-    "price_hints": {},
-    "selected": 0,
+    "hint_queries": 4,
+    "price_hints": {
+      "out|三亚|2026-11-24": 600.0,
+      "out|三亚|2026-11-28": 600.0,
+      "out|三亚|2026-11-29": 600.0,
+      "out|三亚|2026-11-30": 600.0,
+      "out|三亚|2026-12-02": 650.0,
+      "out|三亚|2026-12-03": 650.0,
+      "out|三亚|2026-12-06": 650.0,
+      "out|三亚|2026-12-08": 650.0,
+      "out|厦门|2026-11-24": 200.0,
+      "out|厦门|2026-12-01": 200.0,
+      "out|厦门|2026-12-03": 200.0,
+      "out|厦门|2026-12-04": 200.0,
+      "out|厦门|2026-12-06": 200.0,
+      "out|厦门|2026-12-07": 200.0,
+      "out|厦门|2026-12-08": 200.0,
+      "out|厦门|2026-12-10": 200.0,
+      "out|厦门|2026-12-11": 200.0,
+      "ret|三亚|2026-11-24": 260.0,
+      "ret|三亚|2026-11-25": 260.0,
+      "ret|三亚|2026-11-26": 250.0,
+      "ret|三亚|2026-11-27": 250.0,
+      "ret|三亚|2026-11-30": 340.0,
+      "ret|三亚|2026-12-10": 300.0,
+      "ret|三亚|2026-12-11": 300.0,
+      "ret|三亚|2026-12-12": 300.0,
+      "ret|厦门|2026-11-24": 240.0,
+      "ret|厦门|2026-12-01": 200.0,
+      "ret|厦门|2026-12-02": 200.0,
+      "ret|厦门|2026-12-03": 280.0,
+      "ret|厦门|2026-12-06": 200.0,
+      "ret|厦门|2026-12-07": 280.0,
+      "ret|厦门|2026-12-08": 200.0,
+      "ret|厦门|2026-12-10": 200.0,
+      "ret|厦门|2026-12-11": 280.0,
+      "ret|厦门|2026-12-13": 200.0
+    },
+    "selected": 8,
     "truncated": true,
-    "pattern_skipped": 0,
-    "evaluated_candidates": 0,
+    "pattern_skipped": 17,
+    "evaluated_candidates": 3,
     "over_budget_candidates": 0,
-    "elapsed_s": 1.2
+    "elapsed_s": 73.2
   },
-  "plans": [],
-  "per_destination_best": {
-    "三亚": null,
-    "厦门": null
-  },
-  "unavailable": [],
-  "unavailable_hints": [
-    "当前不接受中转，接受中转可能更便宜",
-    "为控制查询量（单次 ≤30 次），另有 28 个日期组合未查询；缩小时间窗口或固定晚数可覆盖更全"
+  "plans": [
+    {
+      "candidate_id": "厦门|2026-12-05|2n|free_day|day_off",
+      "dest": "厦门",
+      "origin": {
+        "city": "上海",
+        "kind": "home"
+      },
+      "out_date": "2026-12-05",
+      "out_weekday": "周六",
+      "ret_date": "2026-12-07",
+      "ret_weekday": "周一",
+      "nights": 2,
+      "hotel_nights": 2,
+      "out_mode": "假日出发",
+      "ret_mode": "请假返程",
+      "leave_dates": [
+        "2026-12-07"
+      ],
+      "leave_days": 1,
+      "slots": {
+        "2026-12-05": [
+          "晚上"
+        ],
+        "2026-12-06": [
+          "上午",
+          "下午",
+          "晚上"
+        ],
+        "2026-12-07": [
+          "上午"
+        ]
+      },
+      "slot_count": 5,
+      "dest_arrive": "2026-12-05 16:55",
+      "dest_leave": "2026-12-07 15:00",
+      "price": {
+        "out": 290.0,
+        "ret": 380.0,
+        "transport_per_person": 670.0,
+        "persons": 2,
+        "transport_total": 1340.0,
+        "hotel_per_night": 92.0,
+        "hotel_nights": 2,
+        "rooms": 1,
+        "hotel_total": 184.0,
+        "total": 1524.0
+      },
+      "out": {
+        "price": 290.0,
+        "flight": {
+          "kind": "flight",
+          "price": 290.0,
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3LsVtZ",
+          "direct": true,
+          "layovers_min": [],
+          "segments": [
+            {
+              "no": "9C8807",
+              "dep": "2026-12-05 14:05",
+              "arr": "2026-12-05 15:55",
+              "from": "虹桥",
+              "to": "高崎",
+              "from_full": "虹桥国际机场",
+              "to_full": "高崎国际机场",
+              "seat": "经济舱"
+            }
+          ]
+        },
+        "train": null,
+        "leave_home": "2026-12-05 11:45",
+        "dest_arrive": "2026-12-05 15:55",
+        "flags": []
+      },
+      "ret": {
+        "price": 380.0,
+        "flight": {
+          "kind": "flight",
+          "price": 380.0,
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3aWFtj",
+          "direct": true,
+          "layovers_min": [],
+          "segments": [
+            {
+              "no": "9C8808",
+              "dep": "2026-12-07 17:00",
+              "arr": "2026-12-07 19:00",
+              "from": "高崎",
+              "to": "虹桥",
+              "from_full": "高崎国际机场",
+              "to_full": "虹桥国际机场",
+              "seat": "经济舱"
+            }
+          ]
+        },
+        "train": null,
+        "dest_leave": "2026-12-07 15:00",
+        "home_arrive": "2026-12-07 19:50",
+        "flags": []
+      },
+      "hotel": {
+        "shId": "51259450",
+        "name": "厦门可居酒店(SM二期高崎国际机场店)",
+        "star": "高档型",
+        "price_per_night": 92.0,
+        "address": "长浩东路23号1楼大堂(麦德龙斜对面)",
+        "near": "近火炬园(地铁站)",
+        "pic": "https://img.alicdn.com/imgextra/i1/O1CN01wtmXb9oNwAK37MB6_!!4611686018427381012-0-fliggy_content_upload_image.jpg",
+        "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F4eLlbT"
+      },
+      "hotel_alts": [
+        {
+          "shId": "10095267",
+          "name": "厦门大亿颐豪酒店(高崎机场店)",
+          "star": "高档型",
+          "price_per_night": 148.0,
+          "address": "长浩路227号",
+          "near": "近火炬园(地铁站)",
+          "pic": "https://img.alicdn.com/imgextra/i3/O1CN01lpGQikmWeQF37MB6_!!4611686018427382298-0-fliggy_content_upload_image.jpg",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F4VPHmA"
+        },
+        {
+          "shId": "51140263",
+          "name": "驿田酒店(厦门莲花路口地铁站店)",
+          "star": "高档型",
+          "price_per_night": 162.0,
+          "address": "厦门-思明区-莲花南路映碧里42号（淩志大厦对面）-，近磐基中心。",
+          "near": "近厦门站",
+          "pic": "https://img.alicdn.com/imgextra/i3/6000000002189/O1CN01344ZQI1S2bhPF3QBK_!!6000000002189-0-hotel.jpg",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3DHnYj"
+        }
+      ],
+      "flags": [
+        "酒店为参考起价"
+      ],
+      "estimated_holiday": false,
+      "rank": 1,
+      "save_vs_max": 1954.0,
+      "brief": {
+        "out": "9C8807 12-05 14:05 虹桥→高崎 15:55",
+        "ret": "9C8808 12-07 17:00 高崎→虹桥 19:00"
+      },
+      "reason_facts": {
+        "compare_with_rank": 2,
+        "price_diff": 1954.0,
+        "slot_diff": 0,
+        "leave_diff": 0
+      }
+    },
+    {
+      "candidate_id": "三亚|2026-11-20|2n|day_off|free_day",
+      "dest": "三亚",
+      "origin": {
+        "city": "上海",
+        "kind": "home"
+      },
+      "out_date": "2026-11-20",
+      "out_weekday": "周五",
+      "ret_date": "2026-11-22",
+      "ret_weekday": "周日",
+      "nights": 2,
+      "hotel_nights": 2,
+      "out_mode": "请假白天出发",
+      "ret_mode": "假日返程",
+      "leave_dates": [
+        "2026-11-20"
+      ],
+      "leave_days": 1,
+      "slots": {
+        "2026-11-21": [
+          "上午",
+          "下午",
+          "晚上"
+        ],
+        "2026-11-22": [
+          "上午",
+          "下午"
+        ]
+      },
+      "slot_count": 5,
+      "dest_arrive": "2026-11-20 23:00",
+      "dest_leave": "2026-11-22 17:20",
+      "price": {
+        "out": 800.0,
+        "ret": 800.0,
+        "transport_per_person": 1600.0,
+        "persons": 2,
+        "transport_total": 3200.0,
+        "hotel_per_night": 139.0,
+        "hotel_nights": 2,
+        "rooms": 1,
+        "hotel_total": 278.0,
+        "total": 3478.0
+      },
+      "out": {
+        "price": 800.0,
+        "flight": {
+          "kind": "flight",
+          "price": 800.0,
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F2Fv3TA",
+          "direct": true,
+          "layovers_min": [],
+          "segments": [
+            {
+              "no": "CZ3836",
+              "dep": "2026-11-20 18:20",
+              "arr": "2026-11-20 22:00",
+              "from": "浦东",
+              "to": "凤凰",
+              "from_full": "浦东国际机场",
+              "to_full": "凤凰国际机场",
+              "seat": "经济舱"
+            }
+          ]
+        },
+        "train": null,
+        "leave_home": "2026-11-20 15:30",
+        "dest_arrive": "2026-11-20 22:00",
+        "flags": []
+      },
+      "ret": {
+        "price": 800.0,
+        "flight": {
+          "kind": "flight",
+          "price": 800.0,
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F08ybEk",
+          "direct": true,
+          "layovers_min": [],
+          "segments": [
+            {
+              "no": "HO1226",
+              "dep": "2026-11-22 19:20",
+              "arr": "2026-11-22 22:20",
+              "from": "凤凰",
+              "to": "虹桥",
+              "from_full": "凤凰国际机场",
+              "to_full": "虹桥国际机场",
+              "seat": "经济舱"
+            }
+          ]
+        },
+        "train": null,
+        "dest_leave": "2026-11-22 17:20",
+        "home_arrive": "2026-11-22 23:10",
+        "flags": []
+      },
+      "hotel": {
+        "shId": "60322002",
+        "name": "莫言莫语设计师酒店(三亚亚龙湾博后店)",
+        "star": "高档型",
+        "price_per_night": 139.0,
+        "address": "亚龙湾博后村委会新坡三组15号",
+        "near": "近博后村",
+        "pic": "https://img.alicdn.com/imgextra/i2/6000000003416/O1CN01uOGj5v1b6ZrT7Y4Sc_!!6000000003416-0-hotel.jpg",
+        "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1SMfIX"
+      },
+      "hotel_alts": [
+        {
+          "shId": "56046347",
+          "name": "三亚凯瑞莱海景度假酒店(大东海店)",
+          "star": "高档型",
+          "price_per_night": 148.0,
+          "address": "三亚市吉阳区大东海榆亚路428号",
+          "near": "近德贝PADI潜水俱乐部",
+          "pic": "https://img.alicdn.com/imgextra/i2/6000000001325/O1CN01cnOuS01LetvMg3jGw_!!6000000001325-2-hotel.png",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F2gBiB2"
+        },
+        {
+          "shId": "53862283",
+          "name": "三亚碧海金沙酒店",
+          "star": "高档型",
+          "price_per_night": 152.0,
+          "address": "三亚湾路195号",
+          "near": "近三亚湾",
+          "pic": "https://img.alicdn.com/imgextra/i3/6000000002068/O1CN01Xf9lhg1R9C49n0rmV_!!6000000002068-0-hotel.jpg",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F0mFdbc"
+        }
+      ],
+      "flags": [
+        "酒店为参考起价"
+      ],
+      "estimated_holiday": false,
+      "rank": 2,
+      "save_vs_max": 0.0,
+      "brief": {
+        "out": "CZ3836 11-20 18:20 浦东→凤凰 22:00",
+        "ret": "HO1226 11-22 19:20 凤凰→虹桥 22:20"
+      },
+      "reason_facts": {
+        "compare_with_rank": 3,
+        "price_diff": -2134.0,
+        "slot_diff": 1,
+        "leave_diff": 0
+      }
+    },
+    {
+      "candidate_id": "厦门|2026-12-04|2n|day_off|free_day",
+      "dest": "厦门",
+      "origin": {
+        "city": "上海",
+        "kind": "home"
+      },
+      "out_date": "2026-12-04",
+      "out_weekday": "周五",
+      "ret_date": "2026-12-06",
+      "ret_weekday": "周日",
+      "nights": 2,
+      "hotel_nights": 2,
+      "out_mode": "请假白天出发",
+      "ret_mode": "假日返程",
+      "leave_dates": [
+        "2026-12-04"
+      ],
+      "leave_days": 1,
+      "slots": {
+        "2026-12-04": [
+          "晚上"
+        ],
+        "2026-12-05": [
+          "上午",
+          "下午",
+          "晚上"
+        ]
+      },
+      "slot_count": 4,
+      "dest_arrive": "2026-12-04 15:05",
+      "dest_leave": "2026-12-06 05:10",
+      "price": {
+        "out": 380.0,
+        "ret": 200.0,
+        "transport_per_person": 580.0,
+        "persons": 2,
+        "transport_total": 1160.0,
+        "hotel_per_night": 92.0,
+        "hotel_nights": 2,
+        "rooms": 1,
+        "hotel_total": 184.0,
+        "total": 1344.0
+      },
+      "out": {
+        "price": 380.0,
+        "flight": {
+          "kind": "flight",
+          "price": 380.0,
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F2nk56G",
+          "direct": true,
+          "layovers_min": [],
+          "segments": [
+            {
+              "no": "9C8837",
+              "dep": "2026-12-04 12:00",
+              "arr": "2026-12-04 14:05",
+              "from": "虹桥",
+              "to": "高崎",
+              "from_full": "虹桥国际机场",
+              "to_full": "高崎国际机场",
+              "seat": "经济舱"
+            }
+          ]
+        },
+        "train": null,
+        "leave_home": "2026-12-04 09:40",
+        "dest_arrive": "2026-12-04 14:05",
+        "flags": []
+      },
+      "ret": {
+        "price": 200.0,
+        "flight": {
+          "kind": "flight",
+          "price": 200.0,
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F4atWRk",
+          "direct": true,
+          "layovers_min": [],
+          "segments": [
+            {
+              "no": "9C8824",
+              "dep": "2026-12-06 07:10",
+              "arr": "2026-12-06 08:55",
+              "from": "高崎",
+              "to": "虹桥",
+              "from_full": "高崎国际机场",
+              "to_full": "虹桥国际机场",
+              "seat": "经济舱"
+            }
+          ]
+        },
+        "train": null,
+        "dest_leave": "2026-12-06 05:10",
+        "home_arrive": "2026-12-06 09:45",
+        "flags": []
+      },
+      "hotel": {
+        "shId": "51259450",
+        "name": "厦门可居酒店(SM二期高崎国际机场店)",
+        "star": "高档型",
+        "price_per_night": 92.0,
+        "address": "长浩东路23号1楼大堂(麦德龙斜对面)",
+        "near": "近火炬园(地铁站)",
+        "pic": "https://img.alicdn.com/imgextra/i1/O1CN01wtmXb9oNwAK37MB6_!!4611686018427381012-0-fliggy_content_upload_image.jpg",
+        "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1yXFuo"
+      },
+      "hotel_alts": [
+        {
+          "shId": "10095267",
+          "name": "厦门大亿颐豪酒店(高崎机场店)",
+          "star": "高档型",
+          "price_per_night": 148.0,
+          "address": "长浩路227号",
+          "near": "近火炬园(地铁站)",
+          "pic": "https://img.alicdn.com/imgextra/i3/O1CN01lpGQikmWeQF37MB6_!!4611686018427382298-0-fliggy_content_upload_image.jpg",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3UCXxM"
+        },
+        {
+          "shId": "51140263",
+          "name": "驿田酒店(厦门莲花路口地铁站店)",
+          "star": "高档型",
+          "price_per_night": 162.0,
+          "address": "厦门-思明区-莲花南路映碧里42号（淩志大厦对面）-，近磐基中心。",
+          "near": "近厦门站",
+          "pic": "https://img.alicdn.com/imgextra/i3/6000000002189/O1CN01344ZQI1S2bhPF3QBK_!!6000000002189-0-hotel.jpg",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3W1Oan"
+        }
+      ],
+      "flags": [
+        "酒店为参考起价"
+      ],
+      "estimated_holiday": false,
+      "rank": 3,
+      "save_vs_max": 2134.0,
+      "brief": {
+        "out": "9C8837 12-04 12:00 虹桥→高崎 14:05",
+        "ret": "9C8824 12-06 07:10 高崎→虹桥 08:55"
+      },
+      "reason_facts": {
+        "compare_with_rank": 2,
+        "price_diff": 2134.0,
+        "slot_diff": -1,
+        "leave_diff": 0
+      }
+    }
   ],
-  "min_feasible_total": null,
+  "per_destination_best": {
+    "三亚": {
+      "candidate_id": "三亚|2026-11-20|2n|day_off|free_day",
+      "out_date": "2026-11-20",
+      "ret_date": "2026-11-22",
+      "total": 3478.0,
+      "slot_count": 5,
+      "leave_days": 1
+    },
+    "厦门": {
+      "candidate_id": "厦门|2026-12-05|2n|free_day|day_off",
+      "out_date": "2026-12-05",
+      "ret_date": "2026-12-07",
+      "total": 1524.0,
+      "slot_count": 5,
+      "leave_days": 1
+    }
+  },
+  "unavailable": [
+    {
+      "candidate_id": "厦门|2026-12-03|3n|after_work|free_day",
+      "status": "no_out",
+      "reason": "去程找不到满足约束的航班/衔接"
+    },
+    {
+      "candidate_id": "厦门|2026-12-04|3n|after_work|day_off",
+      "status": "no_out",
+      "reason": "去程找不到满足约束的航班/衔接"
+    },
+    {
+      "candidate_id": "三亚|2026-11-21|2n|free_day|day_off",
+      "status": "no_data",
+      "reason": "当天没有查到航班数据"
+    },
+    {
+      "candidate_id": "三亚|2026-12-04|2n|day_off|free_day",
+      "status": "no_data",
+      "reason": "当天没有查到航班数据"
+    },
+    {
+      "candidate_id": "三亚|2026-12-05|2n|free_day|day_off",
+      "status": "budget",
+      "reason": "单次查询额度用完，未查完"
+    }
+  ],
+  "unavailable_hints": [
+    "有 2 个「下班后出发」的日期赶不上 22 点前起飞的航班，接受去程红眼或特种兵可解锁",
+    "当前不接受中转，接受中转可能更便宜",
+    "同类出发/返程方式连续两次无结果，已跳过其余 17 个同类日期组合以节省查询",
+    "为控制查询量（单次 ≤20 次），另有 3 个日期组合未查询；缩小时间窗口或固定晚数可覆盖更全"
+  ],
+  "min_feasible_total": 1324.0,
   "not_queried": [
-    "三亚|2026-11-19|3n|after_work|free_day",
-    "三亚|2026-11-20|3n|after_work|day_off",
-    "三亚|2026-12-03|3n|after_work|free_day",
-    "三亚|2026-12-04|3n|after_work|day_off",
-    "厦门|2026-11-19|3n|after_work|free_day",
-    "厦门|2026-11-20|3n|after_work|day_off",
-    "厦门|2026-12-03|3n|after_work|free_day",
-    "厦门|2026-12-04|3n|after_work|day_off",
-    "三亚|2026-11-20|2n|after_work|free_day",
-    "三亚|2026-11-27|2n|after_work|free_day",
-    "三亚|2026-12-04|2n|after_work|free_day",
-    "三亚|2026-12-11|2n|after_work|free_day",
-    "厦门|2026-11-20|2n|after_work|free_day",
-    "厦门|2026-11-27|2n|after_work|free_day",
-    "厦门|2026-12-04|2n|after_work|free_day",
-    "厦门|2026-12-11|2n|after_work|free_day",
-    "三亚|2026-11-19|2n|after_work|free_day",
-    "三亚|2026-11-20|2n|day_off|free_day",
-    "三亚|2026-11-21|2n|free_day|day_off",
-    "三亚|2026-12-03|2n|after_work|free_day",
-    "三亚|2026-12-04|2n|day_off|free_day",
-    "三亚|2026-12-05|2n|free_day|day_off",
     "厦门|2026-11-19|2n|after_work|free_day",
     "厦门|2026-11-20|2n|day_off|free_day",
-    "厦门|2026-11-21|2n|free_day|day_off",
-    "厦门|2026-12-03|2n|after_work|free_day",
-    "厦门|2026-12-04|2n|day_off|free_day",
-    "厦门|2026-12-05|2n|free_day|day_off"
+    "厦门|2026-11-21|2n|free_day|day_off"
   ],
   "notes": [
     "价格以飞猪预订页为准；酒店为每晚参考起价；火车余票需自行确认"

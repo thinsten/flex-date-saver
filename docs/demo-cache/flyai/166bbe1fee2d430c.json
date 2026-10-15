@@ -1,0 +1,1 @@
+{"args": ["search-flight", "--origin", "上海", "--destination", "三亚", "--dep-date", "2027-02-06", "--sort-type", "3"], "recorded_at": "2026-10-15T15:18:16+0800", "elapsed_s": 0.82, "returncode": 0, "stdout": {"data": null, "message": "搜索机票低价行业失败", "status": 1, "systemMessage": null}, "stderr_tail": ""}

@@ -19,8 +19,8 @@ class RateLimiter:
 
     飞猪说明：QPS 上限 2；此外安全侧按「行为」风控，某一时间段频繁、规律的调用会被判为疑似脚本（HTTP 451）。
     实测 QPS 合规但 17 秒内连续 24 次仍被封。因此本限流器的目标是「像一个人在查」而不是「卡着上限跑」：
-    - 硬上限：任意 1.2 秒 ≤2 次（QPS2 余量 20%）、60 秒 ≤20 次、10 分钟 ≤60 次
-    - 实测依据：平均 1.5 QPS 连续第 24 次被封；随机 2.5~4 秒（约 19 次/分钟）连续 32 次未触发
+    - 硬上限：任意 1.2 秒 ≤2 次（QPS2 余量 20%）、60 秒 ≤20 次、10 分钟 ≤40 次
+    - 实测依据：平均 1.5 QPS 连续第 24 次被封；随机 2.5~4 秒（约 19 次/分钟）连续 32 次未触发；约 12 分钟累计约 69 次被封
     - 平滑：两次请求之间随机间隔 min_gap~max_gap 秒（不规律、无突发，不会先连发再停）
     - 熔断：任一进程遇到风控，写入 10 分钟冷却期；冷却期内所有进程直接跳过，不再继续请求加重封控
     多个进程（本机或同一沙箱内多次规划）共享同一个状态文件。"""
@@ -93,7 +93,7 @@ class RateLimiter:
 
 class FlyaiClient:
     def __init__(self, cache_dir, max_calls=30, min_interval_s=0.0, replay=False, flyai_bin=None, timeout=90,
-                 rate_rules=((2, 1.2), (20, 60), (60, 600)), gap_s=(2.5, 4.0), cooldown_s=600, cache_ttl_s=1800):
+                 rate_rules=((2, 1.2), (20, 60), (40, 600)), gap_s=(2.5, 4.0), cooldown_s=600, cache_ttl_s=1800):
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.max_calls = max_calls
