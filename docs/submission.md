@@ -49,7 +49,7 @@
 
 ## 百炼使用说明（必填）
 
-- **百炼能力 / 模型**：Managed Agent（托管智能体运行时）+ 通义千问 qwen3.8-max；Skill：自建的 `flex-date-saver` 和百炼官方的 `flyai`；云端运行环境（预装 `@fly-ai/flyai-cli@1.0.16`，网络策略为 unrestricted）。
+- **百炼能力 / 模型**：Managed Agent（托管智能体运行时）+ 通义千问 qwen3.8-max（单次完整规划约 13 万输入 token）；Skill：自建的 `flex-date-saver` 和百炼官方的 `flyai`；云端运行环境（预装 `@fly-ai/flyai-cli@1.0.16`，网络策略为 unrestricted）。
 - **调用方式**：百炼 Managed Agents API（`/files`、`/skills`、`/environments`、`/agents`、`/sessions`）。仓库里的 `tools/deploy_bailian.py` 一条命令完成打包上传 Skill、创建运行环境、创建智能体和冒烟测试。
 - **使用环节与输入输出**：用在**运行时链路**，流程如下：
   1. 用户发消息：表单生成的「规划需求单」，或者一句话描述
@@ -95,7 +95,9 @@
 ## 项目链接与复现方式
 
 - **GitHub**：https://github.com/thinsten/flex-date-saver
-- **在线表单**：https://thinsten.github.io/flex-date-saver/web/
+- **在线表单**：https://thinsten.github.io/flex-date-saver/web/（可直接打开填写，生成的需求单可粘贴给智能体）
+- **完整对话记录**：仓库 `docs/test-runs/` 下有 8 条百炼真实会话（含工具调用），不部署也能看到智能体的实际表现
+- **智能体运行位置**：部署在作者的百炼 Managed Agent 上（智能体 `flex-date-saver`）；评委如需亲自体验，可按下面「部署到百炼」一条命令部署到自己的百炼工作空间
 - **本地真实查价**：
   ```bash
   npm i -g @fly-ai/flyai-cli@1.0.16
@@ -133,7 +135,10 @@
    - 火车座席参数不生效，余票字段为空，改为在本地按座席过滤。
    - 酒店的区域关键词不生效，品牌字段也不可靠，改为按酒店名称里的品牌词识别连锁。
    - 详细记录见 `docs/api-notes.md`。
-7. **百炼部署**
+7. **百炼账户与会话配置**
+   - 在控制台新建会话时如果没填环境变量 `FLYAI_API_KEY`，智能体会用公共试用 Key，额度很快用完并被限流；会话要在「环境变量」里填 Key。
+   - 账户余额不足时，会话接口返回 403「AccessDenied.Unpurchased」，充值后恢复。
+8. **百炼部署**
    - 上传的 zip 要等文件审核变为 available 后才能创建 Skill。
    - 和官方 Skill 同名会被拒绝。
    - 更新智能体时要带上当前版本号。
