@@ -62,9 +62,9 @@
 
 ## 效果展示
 
-**1. 表单页**：点选约束，一键生成需求单
+**1. 表单页**：点选约束，一键生成需求单（即下面百炼会话中粘贴的那份需求单：上海出发，三亚 vs 厦门）
 
-![表单页](https://raw.githubusercontent.com/thinsten/flex-date-saver/main/docs/screenshots/form-desktop.png)
+![表单页](https://raw.githubusercontent.com/thinsten/flex-date-saver/main/docs/screenshots/form-filled.png)
 
 **2. 百炼控制台实拍**（会话 `sesn_01M4ZD54N24D2E6X316F7Z1B6N`，左侧为工具调用记录，右侧为智能体回复）
 
