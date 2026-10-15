@@ -66,15 +66,29 @@
 
 ![表单页](https://raw.githubusercontent.com/thinsten/flex-date-saver/main/docs/screenshots/form-desktop.png)
 
-**2. 百炼智能体：复述确认**
+**2. 百炼控制台实拍**（会话 `sesn_01M4ZD54N24D2E6X316F7Z1B6N`，左侧为工具调用记录，右侧为智能体回复）
 
-{{百炼截图 1：粘贴需求单后的复述确认表}}
+复述确认：
 
-**3. 百炼智能体：方案对比与明细（含预订链接）**
+![百炼控制台-复述确认](https://raw.githubusercontent.com/thinsten/flex-date-saver/main/docs/screenshots/console-1-recap.png)
 
-{{百炼截图 2：方案对比表 + 各目的地最优方案}}
+查价完成后的方案回复：
 
-{{百炼截图 3：方案 1 明细（航班 + 酒店预订链接）与「为什么有些日期没有方案」}}
+![百炼控制台-方案结果](https://raw.githubusercontent.com/thinsten/flex-date-saver/main/docs/screenshots/console-2-result.png)
+
+**3. 智能体回复全文**（控制台右侧面板较窄，下面是同一会话中两条回复的原文渲染，内容未做任何修改）
+
+复述确认表：
+
+![复述确认](https://raw.githubusercontent.com/thinsten/flex-date-saver/main/docs/screenshots/bailian-1-recap.png)
+
+方案对比与各目的地最优：
+
+![方案对比](https://raw.githubusercontent.com/thinsten/flex-date-saver/main/docs/screenshots/bailian-2-plans.png)
+
+方案 1 明细（含预订链接）与不可行原因：
+
+![方案明细](https://raw.githubusercontent.com/thinsten/flex-date-saver/main/docs/screenshots/bailian-3-detail.png)
 
 **一个真实案例**（2026-10-15 百炼智能体 + 飞猪实时报价，即上面截图中的会话）
 
