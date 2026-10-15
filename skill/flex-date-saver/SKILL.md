@@ -9,9 +9,16 @@ description: 弹性日期省钱规划。用户给出常住城市、目的地（�
 
 ## 环境要求
 
-- 运行环境需预装 `@fly-ai/flyai-cli@1.0.16`（1.0.5 等旧版没有 search-train），并可访问外网
+- 需要 `@fly-ai/flyai-cli@1.0.16`（1.0.5 等旧版没有 search-train）。使用前先执行 `flyai --help | grep -c search-train`，输出 0 就提示用户运行 `npm i -g @fly-ai/flyai-cli@1.0.16`；也可用环境变量 `FLYAI_BIN` 指向 1.0.16 的可执行文件
+- 需要能访问外网（百炼运行环境把网络策略设为 unrestricted）
 - 飞猪 Key 用会话环境变量 `FLYAI_API_KEY` 或 `flyai config set FLYAI_API_KEY ...` 配置；不要用密钥库（会 401）
 - Python 3.8+，无第三方依赖
+
+## 交互要求（不论在百炼还是本机调用）
+
+- 先收集约束：用户粘贴了「【规划需求单 v1】」就直接用；否则只列出缺项并给默认值，一次问完，也可以给表单链接 https://thinsten.github.io/flex-date-saver/web/
+- 查价前用一张表复述条件，用户确认后再运行 run_plan.py
+- 输出：一句话结论 → 前 3 方案对比表（出发→返回｜请假｜可玩时段｜总价｜比最贵省｜风险）→ 每个方案的去回程、酒店、可玩时段、预订链接 → 各目的地最优（两个目的地时）→ 为什么有些日期没有方案 → notes
 
 ## 使用步骤
 
@@ -40,6 +47,6 @@ description: 弹性日期省钱规划。用户给出常住城市、目的地（�
 ## 规则
 
 - 价格、时段、请假天数、航班号、车次、链接只能来自 plan.json，禁止估算或编造
-- `errors` 含 `key_invalid` / `trial_mode` / `cli_missing` 时，不展示任何价格，按系统提示词兜底
+- `errors` 含 `key_invalid` / `trial_mode` / `cli_missing` / `cli_too_old` 时，不展示任何价格，说明原因（版本过旧就给出升级命令）
 - `errors` 含 `risk_control` 时，告诉用户飞猪接口短时调用过多，约 10 分钟后再试，已拿到的方案照常展示
 - `plans` 为空时，依据 `unavailable_hints` 给出放宽建议让用户选

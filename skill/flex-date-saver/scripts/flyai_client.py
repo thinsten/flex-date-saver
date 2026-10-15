@@ -175,6 +175,10 @@ class FlyaiClient:
                 self.stopped = "risk_control"
                 self._err("risk_control", "飞猪接口触发风控（短时间调用过多），已停止后续查询，请稍后重试", args)
                 return None
+            if "unknown command" in err:
+                self.stopped = "cli_too_old"
+                self._err("cli_too_old", "flyai-cli 版本过旧（缺少 search-train / search-hotel 命令），请执行 npm i -g @fly-ai/flyai-cli@1.0.16", args)
+                return None
             if "Invalid API key" in err or "MCP HTTP 401" in err:
                 self.stopped = "key_invalid"
                 self._err("key_invalid", "飞猪接口密钥无效（401），请检查 FLYAI_API_KEY", args)
