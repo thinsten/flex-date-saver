@@ -29,8 +29,8 @@
     "上海→三亚 在 2027-02-06 没有查到航班（该日无航班或接口无数据）"
   ],
   "meta": {
-    "live_calls": 10,
-    "cache_hits": 2,
+    "live_calls": 1,
+    "cache_hits": 11,
     "skipped": 0,
     "max_calls": 20,
     "stopped": "risk_control",
@@ -38,7 +38,7 @@
     "replay": false,
     "total_candidates": 9,
     "estimated_queries": 25,
-    "hint_queries": 2,
+    "hint_queries": 0,
     "price_hints": {
       "out|三亚|2027-02-08": 1520.0,
       "out|三亚|2027-02-09": 650.0,
@@ -53,7 +53,7 @@
     "pattern_skipped": 0,
     "evaluated_candidates": 1,
     "over_budget_candidates": 0,
-    "elapsed_s": 35.4
+    "elapsed_s": 1.4
   },
   "plans": [
     {
