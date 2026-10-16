@@ -56,7 +56,7 @@ data/                           ← 网页运行时数据。⚠️ 永不进 git
 ## 4. 本地验证（每次改动必做）
 
 ```bash
-python3 -m unittest discover -s tests            # 35 个测试必须全过
+python3 -m unittest discover -s tests            # 37 个测试必须全过
 # 本地起网页（用测试数据目录，密钥从本机文件读）：
 set -a; . ~/.flex-date-saver.env; set +a
 export DASHSCOPE_BASE_URL="https://$WS.cn-beijing.maas.aliyuncs.com/compatible-mode/v1" FDS_PASSWORD=testpw \
