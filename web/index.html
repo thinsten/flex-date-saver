@@ -73,6 +73,17 @@
   .day.cw{background:#e7f5ff;border-color:#74c0fc;color:var(--ink)}
   .day.cw small{color:#1c7ed6}
   .day.cw.sel{background:var(--acc);color:#fff;border-color:var(--acc)}
+  .calhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+  .calhead .step{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--sub)}
+  .calhead .step button{border:1px solid var(--line);background:#fff;border-radius:7px;width:26px;height:26px;padding:0;font-size:15px;line-height:1;font-weight:600;color:var(--ink);display:inline-flex;align-items:center;justify-content:center}
+  .calhead .step b{min-width:18px;text-align:center;font-size:15px;color:var(--ink)}
+  .calsum{font-size:13px;color:var(--sub);margin:4px 0 8px}
+  .calsum b{color:var(--ink)}
+  .calsum .warn{color:var(--warn)}
+  .fold{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:6px 0 10px;font-size:13px}
+  .fold summary{cursor:pointer;color:var(--acc);font-weight:600;user-select:none}
+  .fold[open] summary{margin-bottom:6px}
+  .fold .row{margin-top:6px}
   #blocks{font-size:13px;margin:6px 0 12px}
   #blocks li{margin:2px 0}
   .st .x{border:0;background:none;color:#adb5bd;cursor:pointer;font-size:16px;padding:0 2px}
@@ -135,7 +146,7 @@
   <ol>
     <li><span class="srv" style="display:inline">在下面一句话说需求，点「AI 帮我填表」；或者</span>直接在表单里点选。大部分项有默认值，只改需要改的。</li>
     <li>选出发地后会自动列出 100 公里内的机场和火车站，开车时间已估好，可以改。</li>
-    <li>在日历上点选能请假的日期（周末要上班的，点一下周末改成上班）。</li>
+    <li>在日历上点选能请假的日期（单休或有调休补班的，展开「我是单休 / 有调休补班」把上班的周末标成「上班」）。</li>
     <li><span class="srv" style="display:inline">点底部「开始规划」，约 1 分钟出结果，可以一键切换省钱 / 多玩，也能把结果分享给同行的朋友。</span><span class="copyonly">点底部「生成需求单」并复制，粘贴给「弹性日期省钱规划」智能体。</span></li>
   </ol>
   <div class="muted">住宿只安排到达当晚（第一晚），之后几晚按你的行程自己定；价格以飞猪预订页为准，火车余票需自行确认。</div>
@@ -189,7 +200,6 @@
     <label class="f"><b>工作日下班时间</b><input type="time" id="offTime" value="18:00"></label>
     <label class="f"><b>上班时间</b><input type="time" id="startTime" value="09:00"></label>
     <label class="f"><b>返程最晚几点到家</b><input type="time" id="homeBy" value="23:00"></label>
-    <label class="f"><b>最多请几天假</b><input type="number" id="maxLeave" min="0" max="10" value="1"></label>
   </div>
   <div class="f" style="margin-bottom:6px"><b style="font-size:13px">到各机场、车站要多少分钟（从公司或家出发）</b></div>
   <div class="hint srv" id="stHint">选好出发地后，自动列出 100 公里内的机场和火车站，开车时间按当前路况估算，可以手动改；用不上的点 × 去掉。</div>
@@ -197,10 +207,24 @@
   <div class="row"><input type="text" id="stName" placeholder="手动添加站点，如：昆山南站" style="max-width:220px">
     <select id="stType" style="max-width:100px"><option value="train">火车站</option><option value="air">机场</option></select>
     <button type="button" class="ghost" id="stAdd" style="padding:7px 14px">添加</button></div>
-  <div class="f" style="margin-bottom:6px"><b style="font-size:13px">可以请假的日期</b></div>
-  <div class="hint">点工作日 = 可以请假（橙色）。灰色是周末/假期；周末要上班的，点一下灰色格子改成「上班」（蓝色），再点一下可勾为请假。</div>
-  <div class="row"><button type="button" class="ghost" id="satWork" style="padding:6px 12px;font-size:13px">每周六上班</button>
-    <button type="button" class="ghost" id="sunWork" style="padding:6px 12px;font-size:13px">每周日上班</button></div>
+  <div class="calhead">
+    <b style="font-size:13px">可以请假的日期</b>
+    <span class="step">
+      最多请
+      <input type="number" id="maxLeave" min="0" max="10" value="1" style="display:none">
+      <button type="button" id="lvMinus" aria-label="减少">−</button>
+      <b id="lvNum">1</b>
+      <button type="button" id="lvPlus" aria-label="增加">＋</button>
+      天
+    </span>
+  </div>
+  <div class="hint">点工作日就是请假（橙色），再点取消。灰色是周末和法定假期。</div>
+  <div id="calSum" class="calsum"></div>
+  <details id="wkWrap" class="fold"><summary>我是单休 / 有调休补班</summary>
+    <div class="hint">周末或假期要上班的，点灰色格子：先改成「上班」（蓝色），再点可勾为请假。</div>
+    <div class="row"><button type="button" class="ghost" id="satWork" style="padding:6px 12px;font-size:13px">每周六上班</button>
+      <button type="button" class="ghost" id="sunWork" style="padding:6px 12px;font-size:13px">每周日上班</button></div>
+  </details>
   <div id="cal" class="hint">先选出发和到达日期。</div>
   <div id="blocks"></div>
 </section>
@@ -403,12 +427,16 @@ function renderCal(){
       for (let i = 0; i < lead; i++){ const b = document.createElement("div"); b.className = "day blank"; box.appendChild(b); }
     }
     const k = iso(d), h = holidayOf(k), cw = customWork.has(k), work = isWorkday(d);
+    const wkFold = $("wkWrap").open;
     const cell = document.createElement("div");
     cell.className = "day" + (work ? "" : " off") + (cw ? " cw" : "") + (h && h.est && !cw ? " est" : "") + (leaveSel.has(k) ? " sel" : "");
     cell.innerHTML = `${d.getDate()}<small>${cw ? (leaveSel.has(k) ? "请假" : "上班") : h ? h.name + (h.est ? "·预估" : "") : (work ? (leaveSel.has(k) ? "请假" : "") : "周末")}</small>`;
-    cell.title = work ? "点击切换：可以请假 / 不请假" : "点击把这天改成上班（单休、调休）";
+    cell.title = work ? "点击切换：可以请假 / 不请假" : (wkFold ? "点击把这天改成上班（单休、调休）" : "周末/假期，不用请假也能休息");
     cell.onclick = () => {
-      if (!work){ customWork.add(k); }
+      if (!work){
+        if (!wkFold) return;
+        customWork.add(k);
+      }
       else if (cw && leaveSel.has(k)){ leaveSel.delete(k); customWork.delete(k); }
       else if (leaveSel.has(k)) leaveSel.delete(k); else leaveSel.add(k);
       renderCal();
@@ -427,13 +455,18 @@ function renderBlocks(){
     else cur = null;
   }
   const maxL = num("maxLeave", 0), md2 = d => `${d.getMonth()+1}/${d.getDate()} 周${W[d.getDay()]}`;
+  const lvTotal = blocks.reduce((a, b) => a + b.leave.length, 0);
+  const maxRun = blocks.reduce((a, b) => Math.max(a, Math.round((b.end - b.start) / 864e5) + 1), 0);
+  const over = lvTotal > maxL;
+  $("calSum").innerHTML = `已请假 <b>${lvTotal}</b> 天 · 上限 <b>${maxL}</b> 天${maxRun ? ` · 最大连休 <b>${maxRun}</b> 天` : ""}${over ? ` <span class="warn">超过上限，只会用到其中 ${maxL} 天</span>` : ""}`;
   const items = blocks.filter(b => b.end > b.start || b.leave.length).map(b => {
     const days = Math.round((b.end - b.start) / 864e5) + 1;
-    const lv = b.leave.length ? `（请 ${b.leave.length} 天${b.leave.length > maxL ? `，超过最多 ${maxL} 天，只会用到其中一部分` : ""}）` : "（不用请假）";
+    const lv = b.leave.length ? `（请 ${b.leave.length} 天${b.leave.length > maxL ? `，超过上限` : ""}）` : "（不用请假）";
     return `<li>${md2(b.start)}${days > 1 ? " – " + md2(b.end) : ""} · 连休 ${days} 天${lv}</li>`;
   });
+  const best = items.indexOf(items.map((t, i) => ({ t, i })).sort((a, b) => parseInt((b.t.match(/连休 (\d+) 天/) || [0, 0])[1]) - parseInt((a.t.match(/连休 (\d+) 天/) || [0, 0])[1]))[0]?.i) ?? -1;
   $("blocks").innerHTML = items.length
-    ? `<div class="muted">一次出行必须落在一段连续的休息里（出发到回家之间不能回去上班），可以组成的连休段：</div><ul style="margin:4px 0 0 18px;padding:0">${items.slice(0, 12).join("")}</ul>${items.length > 12 ? `<div class="muted">…共 ${items.length} 段</div>` : ""}`
+    ? `<div class="muted">你的出行会落在下面某段连续休息里：</div><ul style="margin:4px 0 0 18px;padding:0">${items.slice(0, 12).map((t, i) => i === best ? `<li style="color:var(--acc);font-weight:600">${t.replace(/^/, "★ ")}</li>` : `<li>${t}</li>`).join("")}</ul>${items.length > 12 ? `<div class="muted">…共 ${items.length} 段</div>` : ""}`
     : "";
 }
 function toggleWeekday(w){
@@ -547,9 +580,12 @@ function syncLoc(){
 }
 document.querySelectorAll("input[name=hloc]").forEach(r => r.addEventListener("change", syncLoc));
 $("satWork").onclick = () => toggleWeekday(6); $("sunWork").onclick = () => toggleWeekday(0);
-$("maxLeave").addEventListener("input", renderBlocks);
+$("lvMinus").onclick = () => { const v = num("maxLeave", 1); $("maxLeave").value = Math.max(0, v - 1); syncStepper(); renderBlocks(); };
+$("lvPlus").onclick = () => { const v = num("maxLeave", 1); $("maxLeave").value = Math.min(10, v + 1); syncStepper(); renderBlocks(); };
+function syncStepper(){ $("lvNum").textContent = num("maxLeave", 0); }
+$("wkWrap").addEventListener("toggle", renderCal);
 (function init(){
-  renderNights();
+  renderNights(); syncStepper();
   const t = new Date(); const s = new Date(t.getFullYear(), t.getMonth(), t.getDate() + 14), e = new Date(s.getFullYear(), s.getMonth(), s.getDate() + 30);
   $("wStart").value = iso(s); $("wEnd").value = iso(e); renderCal(); renderNearby(); syncHotel();
 })();
@@ -579,7 +615,7 @@ function fill(r){
   if (r.rooms) $("rooms").value = r.rooms;
   if (r.work){ if (r.work.off_time) $("offTime").value = r.work.off_time; if (r.work.start_time) $("startTime").value = r.work.start_time; }
   if (r.return_home_by) $("homeBy").value = r.return_home_by;
-  if (r.leave){ if (r.leave.max_days != null) $("maxLeave").value = r.leave.max_days; if (r.leave.allowed_dates) leaveSel = new Set(r.leave.allowed_dates); }
+  if (r.leave){ if (r.leave.max_days != null) $("maxLeave").value = r.leave.max_days; if (r.leave.allowed_dates) leaveSel = new Set(r.leave.allowed_dates); syncStepper(); }
   const t = r.transport || {};
   if (t.redeye_out != null) $("redeyeOut").checked = !!t.redeye_out;
   if (t.redeye_back != null) $("redeyeBack").checked = !!t.redeye_back;
