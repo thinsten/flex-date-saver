@@ -12,13 +12,24 @@ description: 弹性日期省钱规划。用户给出常住城市、目的地（�
 - 需要 `@fly-ai/flyai-cli@1.0.16`（1.0.5 等旧版没有 search-train）。使用前先执行 `flyai --help | grep -c search-train`，输出 0 就提示用户运行 `npm i -g @fly-ai/flyai-cli@1.0.16`；也可用环境变量 `FLYAI_BIN` 指向 1.0.16 的可执行文件
 - 需要能访问外网（百炼运行环境把网络策略设为 unrestricted）
 - 飞猪 Key 用会话环境变量 `FLYAI_API_KEY` 或 `flyai config set FLYAI_API_KEY ...` 配置；不要用密钥库（会 401）
+- 可选：高德 Web 服务 Key 用环境变量 `AMAP_KEY` 配置，用于「离到达机场开车 X 分钟」「离指定地点 X 公里」的酒店位置筛选。没有 Key 时位置筛选自动退化为不限（warnings 会提示），其余功能不受影响
 - Python 3.8+，无第三方依赖
 
 ## 交互要求（不论在百炼还是本机调用）
 
 - 先收集约束：用户粘贴了「【规划需求单 v1】」就直接用；否则只列出缺项并给默认值，一次问完，也可以给表单链接 https://thinsten.github.io/flex-date-saver/web/
+- 时间窗口用「最早出发日期 / 最晚到达日期」的说法（最晚到达 = 最晚哪天回到家），不要说「窗口开始/结束」
+- `nights` 支持多选：整数、`{"min":1,"max":3}`、或列表 `[2,3]`（会归一成 options）都认
+- 用户如果是单休/调休（周末要上班），把具体日期写进 `custom_workdays`，日历会按上班算；请假日期必须是连贯的连休段，validate 会校验
 - 查价前用一张表复述条件，用户确认后再运行 run_plan.py
-- 输出：一句话结论 → 前 3 方案对比表（出发→返回｜请假｜可玩时段｜总价｜比最贵省｜风险）→ 每个方案的去回程、酒店、可玩时段、预订链接 → 各目的地最优（两个目的地时）→ 为什么有些日期没有方案 → notes
+- 输出：一句话结论 → 前 3 方案对比表（出发→返回｜请假｜可玩时段｜总价｜比最贵省｜风险）→ 每个方案的去回程、酒店（第一晚）、可玩时段、预订链接 → 各目的地最优（两个目的地时）→ 为什么有些日期没有方案 → notes
+
+## 住宿与总价口径（2026-10-15 起）
+
+- **只安排第一晚住宿**：酒店按到达当晚查 1 晚（特种兵且落地已过 02:00 时 0 晚）。总价 = 交通 × 人数 + 第一晚房价 × 间数；其余晚数不计入，flags 会带「只含第一晚住宿，其余 N 晚未计入总价」，展示时必须照说
+- **位置筛选** `hotel.location`：`station`（默认，离到达机场/车站开车 ≤ `max_drive_min` 分钟）/ `point`（离指定地点 ≤ `max_km` 公里）/ `none`。依赖高德 Key（环境变量 `AMAP_KEY`）：没有 Key 时自动退化为不限位置并在 warnings 提示——百炼沙箱和本机一般没配 Key，属正常现象，别报错
+- 没有满足位置要求的酒店时，推荐最近的一家并打 `too_far` 标签，flags 里有距离提示
+- 第一晚按每个到达机场/车站分别挑选（plan.json 的 hotel 跟随该方案的到达点）
 
 ## 使用步骤
 
@@ -38,7 +49,7 @@ description: 弹性日期省钱规划。用户给出常住城市、目的地（�
 
 ## plan.json 关键字段
 
-- `plans[]`：前 3 个方案。`price.total` 总价、`price` 拆分、`slot_count` 可玩时段数、`slots` 按日期列出时段、`leave_dates` 请假日期、`save_vs_max` 比最贵方案省多少、`flags` 风险标签、`out`/`ret` 去回程（含火车段与 `url`）、`hotel`（含 `url`、`pic`）、`reason_facts` 与相邻名次的价差/时段差/请假差
+- `plans[]`：前 3 个方案。`price.total` 总价、`price` 拆分（`hotel_nights` 只计第一晚，通常为 1）、`slot_count` 可玩时段数、`slots` 按日期列出时段、`leave_dates` 请假日期、`save_vs_max` 比最贵方案省多少、`flags` 风险标签（含「只含第一晚住宿」提示）、`out`/`ret` 去回程（含火车段与 `url`）、`hotel`（第一晚，含 `url`、`pic`，可能带 `drive_min`/`too_far`）、`reason_facts` 与相邻名次的价差/时段差/请假差
 - `per_destination_best`：两个目的地时各自最优
 - `unavailable_hints`：为什么有些日期没方案、怎么放宽
 - `warnings` / `errors`：查询中的提示和错误；`replay=true` 表示用的是回放数据
