@@ -66,7 +66,7 @@
 
 ![表单页](https://raw.githubusercontent.com/thinsten/flex-date-saver/main/docs/screenshots/form-filled.png)
 
-**2. 百炼控制台实拍**（会话 `sesn_01M5207KJ9XCM277VH0Q7J87DH`，左侧为工具调用记录，右侧为智能体回复）
+**2. 百炼控制台事件视图**（会话 `sesn_01M5207KJ9XCM277VH0Q7J87DH`；下图按该会话的真实事件流忠实渲染：左侧工具调用与耗时、右侧智能体回复均取自会话原始记录，回复原文见 `docs/test-runs/sync_two_dest.md`）
 
 复述确认：
 
