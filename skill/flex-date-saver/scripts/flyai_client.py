@@ -93,7 +93,7 @@ class RateLimiter:
 
 class FlyaiClient:
     def __init__(self, cache_dir, max_calls=30, min_interval_s=0.0, replay=False, flyai_bin=None, timeout=90,
-                 rate_rules=((2, 1.2),), gap_s=(0.0, 0.0), cooldown_s=600, cache_ttl_s=1800):
+                 rate_rules=((2, 1.2),), gap_s=(0.0, 0.0), cooldown_s=600, cache_ttl_s=1800, err_ttl_s=60):
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.max_calls = max_calls
@@ -111,7 +111,13 @@ class FlyaiClient:
         self.recorded = set()
         self._last = 0.0
         self.limiter = RateLimiter(rate_rules, gap_s[0], gap_s[1], cooldown_s)
-        self.cache_ttl_s = cache_ttl_s  # 实时模式下 30 分钟内的同一查询直接用缓存，减少重复调用；回放模式不看时效
+        self.cache_ttl_s = cache_ttl_s  # 实时模式下 30 分钟内的同一成功查询直接用缓存，减少重复调用；回放模式不看时效
+        self.err_ttl_s = err_ttl_s      # 失败响应（data:null，接口瞬时炸）只缓存这么短的时间，避免把偶发故障锁成「当天无航班」
+
+    @staticmethod
+    def _is_fail(body):
+        """成功响应必有 data 对象（哪怕 itemList 为空）；data 为 null 即接口瞬时失败。"""
+        return isinstance(body, dict) and body.get("data") is None
 
     @staticmethod
     def key(args):
@@ -126,7 +132,8 @@ class FlyaiClient:
         path = self.cache_dir / f"{self.key(args)}.json"
         if path.exists():
             rec = json.loads(path.read_text(encoding="utf-8"))
-            fresh = self.replay or (time.time() - path.stat().st_mtime) < self.cache_ttl_s
+            ttl = self.err_ttl_s if self._is_fail(rec.get("stdout")) else self.cache_ttl_s
+            fresh = self.replay or (time.time() - path.stat().st_mtime) < ttl
             if fresh:
                 self.cache_hits += 1
                 return self._extract(rec, args, from_cache=True)

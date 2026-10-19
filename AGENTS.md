@@ -56,7 +56,7 @@ data/                           ← 网页运行时数据。⚠️ 永不进 git
 ## 4. 本地验证（每次改动必做）
 
 ```bash
-python3 -m unittest discover -s tests            # 37 个测试必须全过
+python3 -m unittest discover -s tests            # 38 个测试必须全过
 # 本地起网页（用测试数据目录，密钥从本机文件读）：
 set -a; . ~/.flex-date-saver.env; set +a
 export DASHSCOPE_BASE_URL="https://$WS.cn-beijing.maas.aliyuncs.com/compatible-mode/v1" FDS_PASSWORD=testpw \
@@ -106,6 +106,7 @@ remote-install.sh 的顺序：停服 → 备份 data/jobs 到 `.releases/<时间
 | flyai-cli 版本 | 必须 1.0.16（1.0.5 无 search-train）；服务器装在 /opt/flex-date-saver/node_modules，用 FLYAI_BIN 指定 |
 | 飞猪限流 | QPS=2；Key 已加白，rate_rules 只限 [[2,1.2]]。未加白的 Key 改回 [[2,1.2],[20,60],[40,600]]、gap_s [2.5,4.0] |
 | 飞猪风控熔断 | 一旦 HTTP 451，所有进程冷却 20 分钟（状态文件 FDS_RATE_FILE）；本机、百炼、网页三处共用一个 Key，状态不共享，别同时大量查价 |
+| 失败缓存 | 接口瞬时故障（data:null「搜索机票低价行业失败」，实测杭州-沈阳线按线×日间歇出现，9 分钟后同参数就有票）只缓存 `err_ttl_s`（60s），成功响应才按 `cache_ttl_s`（30min）；否则一次故障会把「当天无航班」锁 30 分钟 |
 | 航班缓存 | 服务端 5 分钟内同线同日缓存且忽略时段参数，航班查询一律不带时段，本地过滤 |
 | 往返 / 座席 / 区域 / 品牌 | 往返查询正式 Key 下为空（两段单程相加）；火车座席参数无效；酒店区域关键词无效；brandName 不可靠——详见 docs/api-notes.md |
 | 服务器 Python | 系统自带 3.6 跑不了脚本（date.fromisoformat 等），服务用 /usr/bin/python3.11 |

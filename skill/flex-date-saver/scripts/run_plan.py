@@ -52,7 +52,8 @@ def main():
     client = FlyaiClient(a.cache_dir or (wd / "cache"), max_calls=cfg["limits"]["max_calls"],
                          min_interval_s=cfg["limits"]["min_interval_s"], replay=a.replay,
                          rate_rules=cfg["limits"]["rate_rules"], gap_s=cfg["limits"]["gap_s"],
-                         cooldown_s=cfg["limits"]["cooldown_s"], cache_ttl_s=cfg["limits"]["cache_ttl_s"])
+                         cooldown_s=cfg["limits"]["cooldown_s"], cache_ttl_s=cfg["limits"]["cache_ttl_s"],
+                         err_ttl_s=cfg["limits"].get("err_ttl_s", 60))
     quotes = fetch(req, cands, client)
     write_json(wd / "quotes.json", quotes)
 

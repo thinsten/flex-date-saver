@@ -45,7 +45,7 @@ description: 弹性日期省钱规划。用户给出常住城市、目的地（�
 4. 读取 `/tmp/fds_run/plan.json`，按系统提示词的输出模板展示
 5. 用户只改目标（省钱/多玩/兼顾）时，不重新查价：
    `python3 scripts/score_rank.py --request /tmp/fds_run/request.normalized.json --quotes /tmp/fds_run/quotes.json --out /tmp/fds_run/plan.json --goal play`
-6. 用户改了日期、出发地、酒店、交通等条件：改写 request.json 后重跑第 3 步，已查过的会命中缓存
+6. 用户改了日期、出发地、酒店、交通等条件：改写 request.json 后重跑第 3 步，已查过的会命中缓存（成功查询缓存 30 分钟；接口瞬时失败的缓存只有 60 秒，所以「该日没查到航班」隔一两分钟重跑可能就恢复了）
 
 ## plan.json 关键字段
 

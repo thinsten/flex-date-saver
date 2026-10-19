@@ -162,6 +162,33 @@ class TestStage3(unittest.TestCase):
         self.assertIsNone(c.call(["search-flight", "--origin", "北京"]))
         self.assertEqual(c.skipped, 1)
 
+    def test_9_error_cache_short_ttl(self):
+        """失败响应（data:null 的接口瞬时炸）只缓存 err_ttl_s；成功响应仍按 cache_ttl_s。
+        实测 2026-10-19 杭州-沈阳线间歇报「搜索机票低价行业失败」，9 分钟后同参数就有票。"""
+        import os as _os
+        import stat
+        fake = self.tmp / "fakeflyai.sh"
+        fake.write_text("#!/bin/sh\n"
+                        'if echo "$*" | grep -q -- --ok; then\n'
+                        '  echo \'{"status":0,"message":"success","data":{"itemList":[]},"systemMessage":null}\'\n'
+                        "else\n"
+                        '  echo \'{"status":1,"message":"搜索机票低价行业失败","data":null,"systemMessage":null}\'\n'
+                        "fi\n")
+        fake.chmod(fake.stat().st_mode | stat.S_IEXEC)
+        c = FlyaiClient(self.tmp / "ttl", flyai_bin=str(fake), cache_ttl_s=1800, err_ttl_s=60)
+        c.call(["search-flight", "--origin", "杭州"])          # 失败 → 写缓存
+        self.assertEqual(c.live_calls, 1)
+        c.call(["search-flight", "--origin", "杭州"])          # 60 秒内 → 命中失败缓存
+        self.assertEqual((c.live_calls, c.cache_hits), (1, 1))
+        c.call(["search-flight", "--origin", "杭州", "--ok"])   # 成功 → 写缓存
+        self.assertEqual(c.live_calls, 2)
+        for f in (self.tmp / "ttl").glob("*.json"):            # 把两份缓存都伪装成 61 秒前写的
+            _os.utime(f, (f.stat().st_atime - 61, f.stat().st_mtime - 61))
+        c.call(["search-flight", "--origin", "杭州"])          # 失败已过 err_ttl → 重查
+        self.assertEqual(c.live_calls, 3)
+        c.call(["search-flight", "--origin", "杭州", "--ok"])   # 成功仍在 1800s TTL 内 → 命中
+        self.assertEqual((c.live_calls, c.cache_hits), (3, 2))
+
 
 if __name__ == "__main__":
     unittest.main()
