@@ -45,6 +45,7 @@ data/                           ← 网页运行时数据。⚠️ 永不进 git
 - **出发地与站点（高德）**：`/api/geo/ip`（IP→默认城市）、`/api/geo/tips`（地址联想）、`/api/geo/city`（城市→市中心坐标）、`/api/geo/stations`（出发点 100km 内机场+火车站，多边形搜索；去掉航站楼/通用/直升/建设中；只给机场和直线最近 8 个火车站算真实开车时间，其余按距离估算并折叠）。高德个人 Key 约 3 QPS：全局 0.35s 节流 + CUQPS 重试，结果内存缓存 1 天。前端用 geoSeq 只认最后一次请求的结果（IP/城市/地址会先后返回）。
 - **开车直达邻近城市机场**：需求单 `stations_source=amap` 时，站点里机场所在城市 ≠ 出发城市的，自动作为 kind=drive 的航班出发城市；且不在站点列表里的机场一律不用（严格模式）。站名匹配用 `Geo._core`（「上海虹桥国际机场」「虹桥」→「虹桥」，「无锡硕放机场」「苏南硕放」→「硕放」）。
 - **住宿只安排第一晚**：酒店按到达当晚查 1 晚；总价 = 交通 × 人数 + 第一晚 × 间数，其余晚数不计入（结果标注）。位置筛选 `hotel.location`：station（默认，离到达机场开车 ≤30 分钟：高德定位机场 → 查所在区县的酒店 → 直线粗筛 → 前 6 家算开车时间）、point（离指定地点 ≤N 公里）、none。没有满足的推荐最近的并打 too_far 标签。第一晚按每个到达机场分别挑（`hotels_by_arrival`）。没有 AMAP_KEY（百炼/本机 Skill）时自动退化为不限位置并提示。
+- **无机场目的地自动接驳（2026-10-19）**：接口会把无民航机场城市静默匹配到邻近机场（实测本溪→沈阳桃仙，见 api-notes 2.2）。`_feeder_out/_feeder_ret` 按航段 arrCityName/depCityName ≠ 目的地识别，补「机场↔目的地」火车段：去程 dest_arrive/酒店位置基准/可玩时段都改用火车到站，回程 dest_leave 用火车发车；总价含火车票；接不上退回纯航班+「地面交通自行安排」。leg JSON 新增 `train_after`（true=火车在航班后，去程接驳；false=火车在前，回程与邻近城市出发）。接驳火车上限用 `limits.feeder_max_train_min`(120)，不占用户通勤 max_train_min 语义。回归 tests/test_stage5.py（fixture：tests/fixtures/feeder 真实录制）。
 - **日历**：`custom_workdays` 是用户把周末/假日改成上班（单休、调休），`HolidayCalendar.for_request(req)` 统一处理；`nights.options` 支持多选晚数。
 - **一句话填表**：`/api/parse` 调百炼兼容接口（`FDS_LLM_MODEL`，默认 qwen3.7-plus；qwen-flash 实测会编造字段，别换回去），只输出用户说了的字段。「周五可以请假」这类由模型输出 weekdays，**后端展开成窗口内具体工作日**（不让模型数日历）。结果回填表单，用户确认后才规划——模型从不接触价格。
 - **规划**：`/api/plan` 先 validate，不通过直接返回缺项/冲突；通过后入**单线程队列**，worker 逐个跑 run_plan.py（保证飞猪 QPS ≤2）。结果在 `data/jobs/<id>/`（request.json / plan.json / work/ / run.log / meta.json）。
@@ -56,7 +57,7 @@ data/                           ← 网页运行时数据。⚠️ 永不进 git
 ## 4. 本地验证（每次改动必做）
 
 ```bash
-python3 -m unittest discover -s tests            # 38 个测试必须全过
+python3 -m unittest discover -s tests            # 45 个测试必须全过
 # 本地起网页（用测试数据目录，密钥从本机文件读）：
 set -a; . ~/.flex-date-saver.env; set +a
 export DASHSCOPE_BASE_URL="https://$WS.cn-beijing.maas.aliyuncs.com/compatible-mode/v1" FDS_PASSWORD=testpw \

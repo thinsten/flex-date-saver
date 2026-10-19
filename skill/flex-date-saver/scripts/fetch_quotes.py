@@ -45,6 +45,7 @@ def parse_journey(item, kind):
                 "from": g.get("depStationShortName") or g.get("depStationName"),
                 "to": g.get("arrStationShortName") or g.get("arrStationName"),
                 "from_full": g.get("depStationName"), "to_full": g.get("arrStationName"),
+                "dep_city": g.get("depCityName"), "arr_city": g.get("arrCityName"),
                 "seat": g.get("seatClassName"),
             })
         except (KeyError, ValueError):
@@ -215,7 +216,7 @@ class Quoter:
             out.append(j)
         return out
 
-    def _trains(self, origin, dest, day, hour_start):
+    def _trains(self, origin, dest, day, hour_start, max_min=None):
         out = []
         for it in self._items(train_args(origin, dest, day, hour_start)):
             j = parse_journey(it, "train")
@@ -224,7 +225,7 @@ class Quoter:
             if any(s["seat"] not in self.seats for s in j["segments"]):
                 continue
             dur = (j["segments"][-1]["arr"] - j["segments"][0]["dep"]).total_seconds() / 60
-            if dur > self.tr["max_train_min"]:
+            if dur > (max_min or self.tr["max_train_min"]):
                 continue
             out.append(j)
         return out
@@ -240,6 +241,147 @@ class Quoter:
             fl.append(f"中转等待{l // 60}小时{l % 60}分" if l % 60 else f"中转等待{l // 60}小时")
         fl.extend(legs_extra)
         return fl
+
+    # --- 无机场目的地接驳：接口会把无民航机场的城市静默匹配到邻近机场（实测 本溪→沈阳桃仙），
+    #     落地城市 ≠ 目的地时自动补「机场↔火车」接驳段，到达/离开时间按真正抵达目的地城市算
+    def _hub_km(self, airport_full, hub, dest):
+        """机场到目的地市中心的直线公里数（高德）；无 Key 或查询失败返回 None，绝不影响主流程。"""
+        if not self.amap.ok:
+            return None
+        if not hasattr(self, "_hubkm_cache"):
+            self._hubkm_cache = {}
+        k = (airport_full, dest)
+        if k not in self._hubkm_cache:
+            km = None
+            try:
+                a = self.amap.place(airport_full, hub)
+                b = self.amap.place(dest, dest)
+                la, lb = (a or {}).get("location"), (b or {}).get("location")
+                if la and lb:
+                    km = round(haversine_km(loc_of(la), loc_of(lb)))
+            except Exception:
+                km = None
+            self._hubkm_cache[k] = km
+        return self._hubkm_cache[k]
+
+    def _feeder_out(self, cand, legs):
+        """去程：航班实际落地邻近城市 → 接火车到目的地。接不上火车的保留纯航班段并提示自行安排。"""
+        dest = cand["dest"]
+        hubs = {}
+        for x in legs:
+            ac = (x["flight"]["segments"][-1].get("arr_city") or "").rstrip("市")
+            if ac and ac != dest:
+                hubs.setdefault(ac, []).append(x)
+        if not hubs:
+            return legs
+        buf = self.cfg["buffer_min"]
+        cap = max(self.cfg["limits"].get("feeder_max_train_min", 120), self.tr["max_train_min"])
+        out = []
+        for hub, xs in hubs.items():
+            reps = [min(xs, key=lambda x: x["price"])]
+            e = min(xs, key=lambda x: x["dest_arrive"])
+            if e not in reps:
+                reps.append(e)
+            trains = {}
+            for x in reps:
+                arr = x["dest_arrive"]
+                earliest = arr + timedelta(minutes=20 + 60 + buf["train"])
+                if earliest.date() != arr.date():
+                    continue  # 凌晨才落地，当天火车基本没票，不查
+                h = min(max(earliest.hour, 5), 21)
+                if (arr.date(), h) not in trains:
+                    trains[(arr.date(), h)] = [t for t in self._trains(hub, dest, arr.date(), h, max_min=cap)]
+            pool = [t for (day, _), v in trains.items() for t in v]
+            for x in xs:
+                arr = x["dest_arrive"]
+                ap = x["flight"]["segments"][-1]["to"]
+                ok = []
+                for t in pool:
+                    if t["segments"][0]["dep"].date() != arr.date():
+                        continue
+                    tf = self.geo.station_to_airport(t["segments"][0]["from"], ap)
+                    if t["segments"][0]["dep"] < arr + timedelta(minutes=20 + tf + buf["train"]):
+                        continue
+                    ok.append((t, tf))
+                known = [z for z in ok if self.geo.known_transfer(z[0]["segments"][0]["from"], ap) is not None]
+                ok = known or ok
+                if not ok:
+                    y = dict(x)
+                    y["flags"] = x["flags"] + [f"目的地{dest}无民航机场，机票落地{hub}；到{dest}的火车未衔接上，地面交通需自行安排"]
+                    out.append(y)
+                    continue
+                t, tf = min(ok, key=lambda z: (z[0]["segments"][-1]["arr"], z[0]["price"]))  # 最早到 = 多玩
+                km = self._hub_km(x["flight"]["segments"][-1].get("to_full") or ap, hub, dest)
+                y = dict(x)
+                y["train"] = t
+                y["train_after"] = True
+                y["price"] = round(x["price"] + t["price"], 2)
+                y["dest_arrive"] = t["segments"][-1]["arr"]
+                fl = [f"目的地{dest}无民航机场，落地{hub}转火车", "火车余票需自行确认",
+                      f"机场到{t['segments'][0]['from']}换乘约{tf}分钟(估算)"]
+                if km:
+                    fl.append(f"{ap}机场距{dest}市区约{km}公里(直线)")
+                y["flags"] = x["flags"] + fl
+                out.append(y)
+        return out
+
+    def _feeder_ret(self, cand, legs):
+        """回程：目的地无机场 → 先火车到邻近城市机场再飞。按整条链最晚离开目的地的车次排（多玩）。"""
+        dest = cand["dest"]
+        hubs = {}
+        for x in legs:
+            dc = (x["flight"]["segments"][0].get("dep_city") or "").rstrip("市")
+            if dc and dc != dest:
+                hubs.setdefault(dc, []).append(x)
+        if not hubs:
+            return legs
+        buf = self.cfg["buffer_min"]
+        cap = max(self.cfg["limits"].get("feeder_max_train_min", 120), self.tr["max_train_min"])
+        out = []
+        for hub, xs in hubs.items():
+            day = d(cand["ret_date"])
+            reps = [min(xs, key=lambda x: x["price"])]
+            l = max(xs, key=lambda x: x["flight"]["segments"][0]["dep"])
+            if l not in reps:
+                reps.append(l)
+            pool = []
+            seen = set()
+            for x in reps:
+                h = min(max(x["flight"]["segments"][0]["dep"].hour - 4, 6), 20)
+                if h in seen:
+                    continue
+                seen.add(h)
+                pool += [t for t in self._trains(dest, hub, day, h, max_min=cap)]
+            for x in xs:
+                fdep = x["flight"]["segments"][0]["dep"]
+                ap = x["flight"]["segments"][0]["from"]
+                ok = []
+                for t in pool:
+                    tf = self.geo.station_to_airport(t["segments"][-1]["to"], ap)
+                    if t["segments"][-1]["arr"] + timedelta(minutes=tf + buf["air"]) > fdep:
+                        continue
+                    ok.append((t, tf))
+                known = [z for z in ok if self.geo.known_transfer(z[0]["segments"][-1]["to"], ap) is not None]
+                ok = known or ok
+                if not ok:
+                    y = dict(x)
+                    y["flags"] = x["flags"] + [f"目的地{dest}无民航机场，需从{hub}乘机；{dest}到{hub}的火车未衔接上，地面交通需自行安排"]
+                    out.append(y)
+                    continue
+                t, tf = max(ok, key=lambda z: (z[0]["segments"][-1]["arr"], -z[0]["price"]))  # 最晚走 = 多玩
+                km = self._hub_km(x["flight"]["segments"][0].get("from_full") or ap, hub, dest)
+                y = dict(x)
+                y["train"] = t
+                y["train_after"] = False
+                y["price"] = round(x["price"] + t["price"], 2)
+                y["dest_leave"] = t["segments"][0]["dep"]
+                fl = [f"目的地{dest}无民航机场，先火车到{hub}乘机", "火车余票需自行确认",
+                      f"{t['segments'][-1]['to']}到机场换乘约{tf}分钟(估算)"]
+                if km:
+                    fl.append(f"{dest}距{ap}机场约{km}公里(直线)")
+                y["flags"] = x["flags"] + fl
+                out.append(y)
+        return out
 
     # --- 预检：只用航班列表（每条线路每天 1 次调用、全局共享）做乐观可行性判断，不行就不再查火车
     def precheck(self, cand, origin):
@@ -350,7 +492,7 @@ class Quoter:
                 legs.append({"flight": f, "train": t, "price": f["price"] + t["price"],
                              "leave_home": t["segments"][0]["dep"] - timedelta(minutes=cm_t + buf["train"]),
                              "dest_arrive": f["segments"][-1]["arr"], "flags": self._flags(f, notes)})
-        return pareto(legs, lambda x: x["price"], lambda x: x["dest_arrive"])
+        return self._feeder_out(cand, pareto(legs, lambda x: x["price"], lambda x: x["dest_arrive"]))
 
     # --- 回程
     def inbound(self, cand, origin):
@@ -423,7 +565,7 @@ class Quoter:
                              "home_arrive": t["segments"][-1]["arr"] + timedelta(minutes=cm_t),
                              "dest_leave": f["segments"][0]["dep"] - timedelta(minutes=lv["air"]),
                              "flags": self._flags(f, ["火车余票需自行确认", f"机场到站换乘约{tf}分钟(估算)"])})
-        return pareto(legs, lambda x: x["price"], lambda x: -x["dest_leave"].timestamp())
+        return self._feeder_ret(cand, pareto(legs, lambda x: x["price"], lambda x: -x["dest_leave"].timestamp()))
 
     # --- 酒店
     def _hotel_query(self, cand, ci, co, dest_name=None):
@@ -657,9 +799,12 @@ def fetch(req, cands, client):
             else:
                 pre[-1] = "no_out" if not outs else "no_ret"
         by_arr = {}
-        for op in opts:  # 第一晚酒店按每个到达机场分别挑（同城可能落不同机场）
+        for op in opts:  # 第一晚酒店按每个到达点分别挑（同城可能落不同机场；无机场目的地按接驳火车站）
             for leg in op["out"]:
-                seg = leg["flight"]["segments"][-1]
+                if leg.get("train_after") and leg.get("train"):
+                    seg = leg["train"]["segments"][-1]  # 接驳：真正落脚是目的地火车站
+                else:
+                    seg = leg["flight"]["segments"][-1]
                 key = seg.get("to_full") or seg.get("to")
                 if key not in by_arr:
                     by_arr[key] = q.hotels(c, seg)
@@ -691,11 +836,13 @@ def fetch(req, cands, client):
 
 def _leg_out(x):
     return {"price": x["price"], "flight": leg_json(x["flight"]), "train": leg_json(x["train"]) if x["train"] else None,
+            "train_after": bool(x.get("train_after")),
             "leave_home": fmt_dt(x["leave_home"]), "dest_arrive": fmt_dt(x["dest_arrive"]), "flags": x["flags"]}
 
 
 def _leg_ret(x):
     return {"price": x["price"], "flight": leg_json(x["flight"]), "train": leg_json(x["train"]) if x["train"] else None,
+            "train_after": bool(x.get("train_after")),
             "dest_leave": fmt_dt(x["dest_leave"]), "home_arrive": fmt_dt(x["home_arrive"]), "flags": x["flags"]}
 
 

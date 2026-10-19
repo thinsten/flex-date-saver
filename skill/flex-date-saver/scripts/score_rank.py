@@ -37,14 +37,20 @@ def evaluate(q, req, cfg):
     by_arr = q.get("hotels_by_arrival") or {}
     for opt in q["options"]:
         for o in opt["out"]:
-            seg = o["flight"]["segments"][-1]
+            if o.get("train_after") and o.get("train"):  # 无机场目的地接驳：落脚是目的地火车站
+                seg = o["train"]["segments"][-1]
+            else:
+                seg = o["flight"]["segments"][-1]
             hl = by_arr.get(seg.get("to_full") or seg.get("to")) or ([q["hotel"]] + (q.get("hotel_alts") or []) if q.get("hotel") else [])
             if not hl:
                 continue
             hotel, alts = hl[0], hl[1:3]
             for r in opt["ret"]:
                 fl_arr = parse_dt(o["flight"]["segments"][-1]["arr"])
-                arrive = fl_arr + timedelta(minutes=cfg["arrive_to_hotel_min"]["air"])
+                if o.get("train_after"):  # 无机场目的地接驳：真正到达目的地的时间是接驳火车到站
+                    arrive = parse_dt(o["dest_arrive"]) + timedelta(minutes=cfg["arrive_to_hotel_min"]["train"])
+                else:
+                    arrive = fl_arr + timedelta(minutes=cfg["arrive_to_hotel_min"]["air"])
                 leave = parse_dt(r["dest_leave"])
                 if leave <= arrive:
                     continue
@@ -53,7 +59,7 @@ def evaluate(q, req, cfg):
                 hotel_nights = 1  # 只安排第一晚，其余几晚用户自行安排、不计入总价
                 no_hotel = None
                 late = cfg["special_forces"]["no_hotel_if_arrive_after"]
-                if sf and fl_arr.date() > d(q["out_date"]) and fl_arr >= at(fl_arr.date(), late):
+                if sf and not o.get("train_after") and fl_arr.date() > d(q["out_date"]) and fl_arr >= at(fl_arr.date(), late):
                     hotel_nights = 0
                     no_hotel = q["out_date"]
                 transport = round(o["price"] + r["price"], 2)
@@ -107,6 +113,10 @@ def _leg_brief(leg):
     s = f"{f[0]['no']} {f[0]['dep'][5:]} {f[0]['from']}→{f[-1]['to']} {f[-1]['arr'][11:]}"
     if len(f) > 1:
         s = " / ".join(f"{x['no']} {x['dep'][5:]} {x['from']}→{x['to']}" for x in f)
+    if leg.get("train"):
+        t = leg["train"]["segments"]
+        ts = " / ".join(f"{x['no']} {x['dep'][5:]} {x['from']}→{x['to']} {x['arr'][11:]}" for x in t)
+        s = f"{ts} + {s}" if not leg.get("train_after") else f"{s} + {ts}"
     return s
 
 

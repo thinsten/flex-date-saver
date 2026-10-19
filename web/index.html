@@ -726,9 +726,11 @@ function pollJob(id){
 }
 function legHtml(label, leg){
   const out = [];
-  if (leg.train && label === "去程") out.push(segHtml("火车", leg.train, true));
+  // train_after=true：火车在航班之后（无机场目的地接驳去程）；旧数据缺省按 去程火车在前/回程火车在后
+  const after = leg.train_after !== undefined ? leg.train_after : (label !== "去程");
+  if (leg.train && !after) out.push(segHtml("火车", leg.train, true));
   out.push(segHtml("航班", leg.flight, false));
-  if (leg.train && label === "回程") out.push(segHtml("火车", leg.train, true));
+  if (leg.train && after) out.push(segHtml("火车", leg.train, true));
   return out.join("");
 }
 function segHtml(kind, j, isTrain){

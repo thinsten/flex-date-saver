@@ -1,0 +1,55 @@
+{
+ "version": "1",
+ "home_city": "杭州",
+ "destinations": [
+  "本溪"
+ ],
+ "window": {
+  "start": "2026-12-04",
+  "end": "2026-12-07"
+ },
+ "nights": [
+  2,
+  3
+ ],
+ "travelers": {
+  "adults": 2,
+  "children": 0
+ },
+ "rooms": 1,
+ "work": {
+  "off_time": "18:00",
+  "start_time": "09:00"
+ },
+ "leave": {
+  "allowed_dates": [
+   "2026-12-04",
+   "2026-12-07"
+  ],
+  "max_days": 1
+ },
+ "return_home_by": "23:00",
+ "transport": {
+  "redeye_out": true,
+  "redeye_back": true,
+  "transfer_ok": false,
+  "max_layover_min": 180,
+  "nearby_origin_ok": false,
+  "nearby_cities": [],
+  "max_train_min": 60
+ },
+ "hotel": {
+  "mode": "filter",
+  "stars": [
+   4
+  ],
+  "location": {
+   "mode": "none"
+  }
+ },
+ "goal": {
+  "priority": "balance",
+  "special_forces": false,
+  "budget_total": null
+ }
+}

@@ -1,0 +1,463 @@
+{
+  "generated_for": "2026-10-19",
+  "goal": "balance",
+  "goal_cn": "兼顾",
+  "replay": false,
+  "recorded_at": {
+    "first": "2026-10-19T15:57",
+    "last": "2026-10-19T15:57"
+  },
+  "errors": [],
+  "warnings": [
+    "本溪→杭州 在 2026-12-06 没有查到航班（该日无航班或接口无数据）"
+  ],
+  "meta": {
+    "live_calls": 10,
+    "cache_hits": 10,
+    "skipped": 0,
+    "max_calls": 40,
+    "stopped": null,
+    "trial_mode": false,
+    "replay": false,
+    "total_candidates": 4,
+    "estimated_queries": 8,
+    "hint_queries": 0,
+    "price_hints": {},
+    "selected": 4,
+    "truncated": false,
+    "pattern_skipped": 0,
+    "evaluated_candidates": 2,
+    "over_budget_candidates": 0,
+    "elapsed_s": 18.5
+  },
+  "plans": [
+    {
+      "candidate_id": "本溪|2026-12-04|3n|after_work|day_off",
+      "dest": "本溪",
+      "origin": {
+        "city": "杭州",
+        "kind": "home"
+      },
+      "out_date": "2026-12-04",
+      "out_weekday": "周五",
+      "ret_date": "2026-12-07",
+      "ret_weekday": "周一",
+      "nights": 3,
+      "hotel_nights": 1,
+      "out_mode": "下班后出发",
+      "ret_mode": "请假返程",
+      "leave_dates": [
+        "2026-12-07"
+      ],
+      "leave_days": 1,
+      "slots": {
+        "2026-12-05": [
+          "下午",
+          "晚上"
+        ],
+        "2026-12-06": [
+          "上午",
+          "下午",
+          "晚上"
+        ]
+      },
+      "slot_count": 5,
+      "dest_arrive": "2026-12-05 08:11",
+      "dest_leave": "2026-12-07 04:50",
+      "price": {
+        "out": 722.0,
+        "ret": 500.0,
+        "transport_per_person": 1222.0,
+        "persons": 2,
+        "transport_total": 2444.0,
+        "hotel_per_night": 175.0,
+        "hotel_nights": 1,
+        "rooms": 1,
+        "hotel_total": 175.0,
+        "total": 2619.0
+      },
+      "out": {
+        "price": 722.0,
+        "flight": {
+          "kind": "flight",
+          "price": 700.0,
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1ztQhT",
+          "direct": true,
+          "layovers_min": [],
+          "segments": [
+            {
+              "no": "CZ5864",
+              "dep": "2026-12-04 21:55",
+              "arr": "2026-12-05 00:40",
+              "from": "萧山",
+              "to": "桃仙",
+              "from_full": "萧山国际机场",
+              "to_full": "桃仙国际机场",
+              "dep_city": "杭州",
+              "arr_city": "沈阳",
+              "seat": "经济舱"
+            }
+          ]
+        },
+        "train": {
+          "kind": "train",
+          "price": 22.0,
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1brAdJ",
+          "direct": true,
+          "layovers_min": [],
+          "segments": [
+            {
+              "no": "D7631",
+              "dep": "2026-12-05 07:00",
+              "arr": "2026-12-05 07:31",
+              "from": "沈阳",
+              "to": "本溪",
+              "from_full": "沈阳站",
+              "to_full": "本溪站",
+              "dep_city": "沈阳",
+              "arr_city": "本溪",
+              "seat": "二等座"
+            }
+          ]
+        },
+        "train_after": true,
+        "leave_home": "2026-12-04 19:25",
+        "dest_arrive": "2026-12-05 07:31",
+        "flags": [
+          "红眼",
+          "深夜落地",
+          "通勤为估算",
+          "目的地本溪无民航机场，落地沈阳转火车",
+          "火车余票需自行确认",
+          "机场到沈阳换乘约60分钟(估算)"
+        ]
+      },
+      "ret": {
+        "price": 500.0,
+        "flight": {
+          "kind": "flight",
+          "price": 500.0,
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1bLzVL",
+          "direct": true,
+          "layovers_min": [],
+          "segments": [
+            {
+              "no": "9C8920",
+              "dep": "2026-12-07 06:50",
+              "arr": "2026-12-07 09:35",
+              "from": "桃仙",
+              "to": "萧山",
+              "from_full": "桃仙国际机场",
+              "to_full": "萧山国际机场",
+              "dep_city": "沈阳",
+              "arr_city": "杭州",
+              "seat": "经济舱"
+            }
+          ]
+        },
+        "train": null,
+        "train_after": false,
+        "dest_leave": "2026-12-07 04:50",
+        "home_arrive": "2026-12-07 10:35",
+        "flags": [
+          "通勤为估算",
+          "目的地本溪无民航机场，需从沈阳乘机；本溪到沈阳的火车未衔接上，地面交通需自行安排"
+        ]
+      },
+      "hotel": {
+        "shId": "10085359",
+        "name": "本溪万豪国际酒店",
+        "star": "四星级",
+        "price_per_night": 175.0,
+        "address": "本溪 明山区 地工路41号 ，近西胜街。",
+        "near": "近辽宁本溪长江步行街",
+        "pic": "https://img.alicdn.com/imgextra/i1/6000000001370/O1CN01WCY8341LzVkglTudr_!!6000000001370-2-hotel.png",
+        "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3UYB8i",
+        "lng": "123.788445",
+        "lat": "41.31009"
+      },
+      "hotel_alts": [
+        {
+          "shId": "73644162",
+          "name": "和颐至尚-本溪客运站店",
+          "star": "高档型",
+          "price_per_night": 193.0,
+          "address": "辽宁省本溪市明山区明山街道解放北路141号",
+          "near": "近本溪长客中心站",
+          "pic": "https://img.alicdn.com/imgextra/i4/6000000006517/O1CN015c3TrG1y0q8JPBrgW_!!6000000006517-0-hotel.jpg",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F0qfALp",
+          "lng": "123.770341",
+          "lat": "41.31254"
+        },
+        {
+          "shId": "67522716",
+          "name": "本溪冠廷假日酒店",
+          "star": "高档型",
+          "price_per_night": 220.0,
+          "address": "胜利路4号",
+          "near": "近本溪站",
+          "pic": "https://img.alicdn.com/imgextra/i4/6000000001242/O1CN01yn99Ya1L2t1UuPE0r_!!6000000001242-2-hotel.png",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F2MKTAy",
+          "lng": "123.761995",
+          "lat": "41.296395"
+        }
+      ],
+      "flags": [
+        "去程红眼",
+        "去程深夜落地",
+        "去程通勤为估算",
+        "去程目的地本溪无民航机场，落地沈阳转火车",
+        "去程火车余票需自行确认",
+        "去程机场到沈阳换乘约60分钟(估算)",
+        "回程通勤为估算",
+        "回程目的地本溪无民航机场，需从沈阳乘机；本溪到沈阳的火车未衔接上，地面交通需自行安排",
+        "酒店为参考起价",
+        "只含第一晚住宿，其余 2 晚未计入总价"
+      ],
+      "estimated_holiday": false,
+      "rank": 1,
+      "save_vs_max": 0.0,
+      "brief": {
+        "out": "CZ5864 12-04 21:55 萧山→桃仙 00:40",
+        "ret": "9C8920 12-07 06:50 桃仙→萧山 09:35"
+      },
+      "reason_facts": {
+        "compare_with_rank": 2,
+        "price_diff": -394.0,
+        "slot_diff": 1,
+        "leave_diff": 0
+      }
+    },
+    {
+      "candidate_id": "本溪|2026-12-05|2n|free_day|day_off",
+      "dest": "本溪",
+      "origin": {
+        "city": "杭州",
+        "kind": "home"
+      },
+      "out_date": "2026-12-05",
+      "out_weekday": "周六",
+      "ret_date": "2026-12-07",
+      "ret_weekday": "周一",
+      "nights": 2,
+      "hotel_nights": 1,
+      "out_mode": "假日出发",
+      "ret_mode": "请假返程",
+      "leave_dates": [
+        "2026-12-07"
+      ],
+      "leave_days": 1,
+      "slots": {
+        "2026-12-05": [
+          "晚上"
+        ],
+        "2026-12-06": [
+          "上午",
+          "下午",
+          "晚上"
+        ]
+      },
+      "slot_count": 4,
+      "dest_arrive": "2026-12-05 17:05",
+      "dest_leave": "2026-12-07 04:50",
+      "price": {
+        "out": 525.0,
+        "ret": 500.0,
+        "transport_per_person": 1025.0,
+        "persons": 2,
+        "transport_total": 2050.0,
+        "hotel_per_night": 175.0,
+        "hotel_nights": 1,
+        "rooms": 1,
+        "hotel_total": 175.0,
+        "total": 2225.0
+      },
+      "out": {
+        "price": 525.0,
+        "flight": {
+          "kind": "flight",
+          "price": 500.0,
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F3Ob0IU",
+          "direct": true,
+          "layovers_min": [],
+          "segments": [
+            {
+              "no": "9C8919",
+              "dep": "2026-12-05 10:55",
+              "arr": "2026-12-05 13:50",
+              "from": "萧山",
+              "to": "桃仙",
+              "from_full": "萧山国际机场",
+              "to_full": "桃仙国际机场",
+              "dep_city": "杭州",
+              "arr_city": "沈阳",
+              "seat": "经济舱"
+            }
+          ]
+        },
+        "train": {
+          "kind": "train",
+          "price": 25.0,
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F37icB1",
+          "direct": true,
+          "layovers_min": [],
+          "segments": [
+            {
+              "no": "D7633",
+              "dep": "2026-12-05 15:54",
+              "arr": "2026-12-05 16:25",
+              "from": "沈阳",
+              "to": "本溪",
+              "from_full": "沈阳站",
+              "to_full": "本溪站",
+              "dep_city": "沈阳",
+              "arr_city": "本溪",
+              "seat": "二等座"
+            }
+          ]
+        },
+        "train_after": true,
+        "leave_home": "2026-12-05 08:25",
+        "dest_arrive": "2026-12-05 16:25",
+        "flags": [
+          "通勤为估算",
+          "目的地本溪无民航机场，落地沈阳转火车",
+          "火车余票需自行确认",
+          "机场到沈阳换乘约60分钟(估算)"
+        ]
+      },
+      "ret": {
+        "price": 500.0,
+        "flight": {
+          "kind": "flight",
+          "price": 500.0,
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F1bLzVL",
+          "direct": true,
+          "layovers_min": [],
+          "segments": [
+            {
+              "no": "9C8920",
+              "dep": "2026-12-07 06:50",
+              "arr": "2026-12-07 09:35",
+              "from": "桃仙",
+              "to": "萧山",
+              "from_full": "桃仙国际机场",
+              "to_full": "萧山国际机场",
+              "dep_city": "沈阳",
+              "arr_city": "杭州",
+              "seat": "经济舱"
+            }
+          ]
+        },
+        "train": null,
+        "train_after": false,
+        "dest_leave": "2026-12-07 04:50",
+        "home_arrive": "2026-12-07 10:35",
+        "flags": [
+          "通勤为估算",
+          "目的地本溪无民航机场，需从沈阳乘机；本溪到沈阳的火车未衔接上，地面交通需自行安排"
+        ]
+      },
+      "hotel": {
+        "shId": "10085359",
+        "name": "本溪万豪国际酒店",
+        "star": "四星级",
+        "price_per_night": 175.0,
+        "address": "本溪 明山区 地工路41号 ，近西胜街。",
+        "near": "近辽宁本溪长江步行街",
+        "pic": "https://img.alicdn.com/imgextra/i1/6000000001370/O1CN01WCY8341LzVkglTudr_!!6000000001370-2-hotel.png",
+        "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F4G1gfJ",
+        "lng": "123.788445",
+        "lat": "41.31009"
+      },
+      "hotel_alts": [
+        {
+          "shId": "73644162",
+          "name": "和颐至尚-本溪客运站店",
+          "star": "高档型",
+          "price_per_night": 193.0,
+          "address": "辽宁省本溪市明山区明山街道解放北路141号",
+          "near": "近本溪长客中心站",
+          "pic": "https://img.alicdn.com/imgextra/i4/6000000006517/O1CN015c3TrG1y0q8JPBrgW_!!6000000006517-0-hotel.jpg",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F38FBx3",
+          "lng": "123.770341",
+          "lat": "41.31254"
+        },
+        {
+          "shId": "67522716",
+          "name": "本溪冠廷假日酒店",
+          "star": "高档型",
+          "price_per_night": 220.0,
+          "address": "胜利路4号",
+          "near": "近本溪站",
+          "pic": "https://img.alicdn.com/imgextra/i4/6000000001242/O1CN01yn99Ya1L2t1UuPE0r_!!6000000001242-2-hotel.png",
+          "url": "https://router.feizhu.com/multi/webview?url=https%3A%2F%2Frouter.feizhu.com%2Fws%2F4JRgG7",
+          "lng": "123.761995",
+          "lat": "41.296395"
+        }
+      ],
+      "flags": [
+        "去程通勤为估算",
+        "去程目的地本溪无民航机场，落地沈阳转火车",
+        "去程火车余票需自行确认",
+        "去程机场到沈阳换乘约60分钟(估算)",
+        "回程通勤为估算",
+        "回程目的地本溪无民航机场，需从沈阳乘机；本溪到沈阳的火车未衔接上，地面交通需自行安排",
+        "酒店为参考起价",
+        "只含第一晚住宿，其余 1 晚未计入总价"
+      ],
+      "estimated_holiday": false,
+      "rank": 2,
+      "save_vs_max": 394.0,
+      "brief": {
+        "out": "9C8919 12-05 10:55 萧山→桃仙 13:50",
+        "ret": "9C8920 12-07 06:50 桃仙→萧山 09:35"
+      },
+      "reason_facts": {
+        "compare_with_rank": 1,
+        "price_diff": 394.0,
+        "slot_diff": -1,
+        "leave_diff": 0
+      }
+    }
+  ],
+  "per_destination_best": {},
+  "unavailable": [
+    {
+      "candidate_id": "本溪|2026-12-04|2n|after_work|free_day",
+      "status": "no_data",
+      "reason": "当天没有查到航班数据"
+    },
+    {
+      "candidate_id": "本溪|2026-12-04|2n|day_off|free_day",
+      "status": "no_data",
+      "reason": "当天没有查到航班数据"
+    }
+  ],
+  "unavailable_hints": [
+    "当前不接受中转，接受中转可能更便宜"
+  ],
+  "min_feasible_total": 2225.0,
+  "not_queried": [],
+  "notes": [
+    "价格以飞猪预订页为准；只安排第一晚住宿（总价只含第一晚）；酒店为参考起价；火车余票需自行确认"
+  ],
+  "system_messages": [],
+  "ok": true,
+  "validation": {
+    "warnings": [
+      {
+        "code": "no_airport_commute",
+        "message": "未填到杭州机场的通勤时间，按 60 分钟估算。"
+      }
+    ],
+    "applied": []
+  },
+  "candidate_stats": {
+    "enumerated": 3,
+    "rejected_mid_leave": 0,
+    "rejected_ret": 0,
+    "rejected_leave_cap": 1,
+    "candidates": 4
+  }
+}
